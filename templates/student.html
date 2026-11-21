@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIT CSE-A — Student Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --header-bg: rgba(15, 23, 42, 0.9);
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --input-bg: rgba(15, 23, 42, 0.7);
+      --badge-green: #10b981;
+      --badge-yellow: #f59e0b;
+      --badge-red: #ef4444;
+    }
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.08);
+      --header-bg: rgba(255, 255, 255, 0.95);
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: rgba(0, 0, 0, 0.1);
+      --input-bg: #f1f5f9;
+    }
+    [data-theme="royal"] {
+      --bg: #1e1b4b;
+      --card-bg: #312e81;
+      --card-border: rgba(255, 255, 255, 0.1);
+      --header-bg: rgba(30, 27, 75, 0.9);
+      --accent: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --text: #f5f3ff;
+      --text-muted: #c4b5fd;
+      --border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(30, 27, 75, 0.7);
+    }
+    [data-theme="emerald"] {
+      --bg: #064e3b;
+      --card-bg: #065f46;
+      --card-border: rgba(255, 255, 255, 0.1);
+      --header-bg: rgba(6, 78, 59, 0.9);
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --text: #ecfdf5;
+      --text-muted: #a7f3d0;
+      --border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(2, 44, 34, 0.7);
+    }
+    [data-theme="sunset"] {
+      --bg: #431407;
+      --card-bg: #7c2d12;
+      --card-border: rgba(255, 255, 255, 0.1);
+      --header-bg: rgba(67, 20, 7, 0.9);
+      --accent: #f97316;
+      --accent-hover: #ea580c;
+      --text: #fff7ed;
+      --text-muted: #fed7aa;
+      --border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(67, 20, 7, 0.7);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    header {
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .live-clock-box {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .theme-picker {
+      display: flex;
+      gap: 0.35rem;
+      background: var(--input-bg);
+      padding: 0.3rem 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+    }
+    .theme-btn {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+    .btn-danger:hover { background: #ef4444; color: white; }
+
+    main {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      flex: 1;
+    }
+
+    /* Student Banner */
+    .profile-banner {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .profile-photo {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--accent);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .profile-info { flex: 1; min-width: 200px; }
+    .profile-name { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em; }
+    .profile-reg { font-size: 0.95rem; color: var(--text-muted); font-weight: 600; margin-top: 0.2rem; }
+
+    /* Quick Badges */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 1.25rem;
+      border-radius: 14px;
+      text-align: center;
+    }
+    .stat-title { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .stat-number { font-size: 1.75rem; font-weight: 800; margin-top: 0.25rem; }
+
+    /* Two column grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: var(--text-muted); font-weight: 500; }
+    .info-val { font-weight: 600; text-align: right; }
+
+    /* Marksheets list */
+    .marks-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem;
+      background: var(--input-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 0.6rem;
+    }
+
+    /* Timetable section */
+    .tt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    .tt-table th, .tt-table td {
+      border: 1px solid var(--border);
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .tt-cell {
+      padding: 0.35rem;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-brand">
+      <img src="/static/images/logo.png" alt="Hindusthan Logo" style="width:42px; height:42px; object-fit:contain; border-radius:8px; background:#fff; padding:2px; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+      <div>
+        <div class="brand-title">Hindusthan • CSE-A Student Portal</div>
+        <div class="brand-sub">Hindusthan Institute of Technology • Batch 2025–2029</div>
+      </div>
+    </div>
+
+    <div class="live-clock-box">
+      <span>🕒</span>
+      <span id="liveClock">Loading clock...</span>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <div class="theme-picker">
+        <button class="theme-btn" style="background:#0f172a;" onclick="setTheme('dark')"></button>
+        <button class="theme-btn" style="background:#f8fafc;" onclick="setTheme('light')"></button>
+        <button class="theme-btn" style="background:#6366f1;" onclick="setTheme('royal')"></button>
+        <button class="theme-btn" style="background:#10b981;" onclick="setTheme('emerald')"></button>
+        <button class="theme-btn" style="background:#f97316;" onclick="setTheme('sunset')"></button>
+      </div>
+      <a href="/logout" class="btn btn-danger">Logout</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- Profile Banner -->
+    <div class="profile-banner">
+      <img src="{% if s.photo %}/static/uploads/photos/{{ s.photo }}{% else %}https://ui-avatars.com/api/?name={{ s.name }}&background=3b82f6&color=fff{% endif %}" alt="{{ s.name }}" class="profile-photo">
+      <div class="profile-info">
+        <h1 class="profile-name">{{ s.name }}</h1>
+        <div class="profile-reg">Register Number: <strong>{{ s.reg_no }}</strong> • Batch 2025–2029</div>
+        <div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <span style="font-size:0.75rem; background:rgba(59, 130, 246, 0.15); color:var(--accent); padding:0.2rem 0.6rem; border-radius:6px; font-weight:700;">{{ s.day_hos or 'Dayscholar' }}</span>
+          {% if s.quota %}<span style="font-size:0.75rem; background:rgba(255, 255, 255, 0.08); color:var(--text-muted); padding:0.2rem 0.6rem; border-radius:6px; font-weight:700;">Quota: {{ s.quota }}</span>{% endif %}
+          {% if s.blood_group %}<span style="font-size:0.75rem; background:rgba(239, 68, 68, 0.15); color:#ef4444; padding:0.2rem 0.6rem; border-radius:6px; font-weight:700;">🩸 {{ s.blood_group }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-title">Attendance</div>
+        <div class="stat-number" style="color:{% if s.attendance >= 90 %}var(--badge-green){% elif s.attendance >= 75 %}var(--badge-yellow){% else %}var(--badge-red){% endif %};">
+          {{ s.attendance or 0 }}%
+        </div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-title">CGPA</div>
+        <div class="stat-number" style="color:var(--accent);">
+          {{ s.cgpa or '0.00' }}
+        </div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-title">Registered Mobile</div>
+        <div class="stat-number" style="font-size:1.15rem; margin-top:0.5rem;">
+          {{ s.whatsapp or s.personal_no or 'N/A' }}
+        </div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-title">Date of Birth</div>
+        <div class="stat-number" style="font-size:1.15rem; margin-top:0.5rem;">
+          {{ s.dob or 'N/A' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Grid -->
+    <div class="dashboard-grid">
+      <!-- Personal & Contact Info -->
+      <div class="card">
+        <div class="card-title">📋 Student Information</div>
+        <div class="info-list">
+          <div class="info-row"><span class="info-label">Aadhar Number</span><span class="info-val">{{ s.aadhar or '-' }}</span></div>
+          <div class="info-row"><span class="info-label">Gender</span><span class="info-val">{{ s.gender or '-' }}</span></div>
+          <div class="info-row"><span class="info-label">Community</span><span class="info-val">{{ s.community or '-' }}</span></div>
+          <div class="info-row"><span class="info-label">Father Name</span><span class="info-val">{{ s.father or '-' }}</span></div>
+          <div class="info-row"><span class="info-label">Father Contact</span><span class="info-val">{{ s.father_mob or '-' }}</span></div>
+          <div class="info-row"><span class="info-label">Mother Name</span><span class="info-val">{{ s.mother or '-' }}</span></div>
+          <div class="info-row"><span class="info-label">Mother Contact</span><span class="info-val">{{ s.mother_mob or '-' }}</span></div>
+          <div class="info-row"><span class="info-label">Address</span><span class="info-val">{{ [s.addr1, s.addr2, s.addr3, s.addr4, s.addr5]|select|join(', ') or '-' }}</span></div>
+          <div class="info-row"><span class="info-label">District & State</span><span class="info-val">{{ s.district }}, {{ s.state }}</span></div>
+          <div class="info-row"><span class="info-label">Pincode</span><span class="info-val">{{ s.pincode or '-' }}</span></div>
+        </div>
+      </div>
+
+      <!-- Marksheets -->
+      <div class="card">
+        <div class="card-title">📜 Semester Marksheets</div>
+        {% if marksheets %}
+          {% for m in marksheets %}
+            <div class="marks-item">
+              <div>
+                <strong style="font-size:0.95rem;">Semester {{ m.semester }}</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Uploaded: {{ m.uploaded_at[:10] }}</div>
+              </div>
+              <a href="/static/uploads/marksheets/{{ m.filename }}" target="_blank" class="btn" style="background:var(--accent); color:white; font-size:0.8rem; padding:0.4rem 0.75rem;">
+                Download Marksheet
+              </a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center; padding:2rem; color:var(--text-muted);">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">📄</div>
+            <p>No marksheets have been uploaded yet for your record.</p>
+            <p style="font-size:0.8rem; margin-top:0.3rem;">Your professors will upload semester grade sheets here.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Timetable Card -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-title">📅 CSE-A Weekly Timetable</div>
+      <div style="overflow-x:auto;">
+        <table class="tt-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              {% for p in periods %}
+                <th>{{ p }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for day, subjs in timetable.items() %}
+              <tr>
+                <td style="font-weight:700;">{{ day }}</td>
+                {% for s in subjs %}
+                  <td>
+                    <div class="tt-cell">{{ s }}</div>
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('hit_theme', theme);
+    }
+    const savedTheme = localStorage.getItem('hit_theme') || 'dark';
+    setTheme(savedTheme);
+
+    function updateClock() {
+      const options = {
+        timeZone: 'Asia/Kolkata',
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      };
+      const now = new Date();
+      document.getElementById('liveClock').textContent = now.toLocaleString('en-IN', options);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
+

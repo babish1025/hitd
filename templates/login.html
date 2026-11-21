@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Role Selection - HIT Smart Academic Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent-yellow: #f59e0b;
+      --accent-yellow-light: #fef3c7;
+      --accent-green: #10b981;
+      --accent-green-light: #d1fae5;
+      --accent-blue: #3b82f6;
+      --accent-blue-light: #dbeafe;
+      --accent-purple: #8b5cf6;
+      --accent-purple-light: #ede9fe;
+      --bg-overlay: linear-gradient(135deg, rgba(254, 243, 199, 0.55), rgba(255, 255, 255, 0.75));
+    }
+    [data-theme="dark"] {
+      --card-bg: rgba(15, 23, 42, 0.95);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --bg-overlay: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.95));
+      --accent-yellow-light: rgba(245, 158, 11, 0.15);
+      --accent-green-light: rgba(16, 185, 129, 0.15);
+      --accent-blue-light: rgba(59, 130, 246, 0.15);
+      --accent-purple-light: rgba(139, 92, 246, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: #0f172a;
+      background-image: var(--bg-overlay), url('/static/images/campus.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      background-attachment: fixed;
+      color: var(--text-main);
+      transition: all 0.3s ease;
+    }
+
+    /* Top Bar */
+    .top-navbar {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      padding: 0.65rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+    [data-theme="dark"] .top-navbar {
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-logo-img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      border-radius: 6px;
+      background: #fff;
+      padding: 1px;
+    }
+    .brand-text {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-main);
+    }
+    .brand-text span {
+      color: #d97706;
+      font-weight: 800;
+    }
+
+    .top-right-group {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .clock-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fde68a;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+    [data-theme="dark"] .clock-pill {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .theme-select {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      color: var(--text-main);
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+    [data-theme="dark"] .theme-select {
+      background: #1e293b;
+      border-color: #334155;
+    }
+
+    /* Main Container */
+    .hero-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1.5rem;
+      max-width: 1300px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Central Title Card */
+    .title-banner {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 20px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07);
+      backdrop-filter: blur(16px);
+      margin-bottom: 2.5rem;
+      max-width: 780px;
+      width: 100%;
+    }
+    [data-theme="dark"] .title-banner {
+      background: rgba(30, 41, 59, 0.85);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .college-name {
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+    .system-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 1.25rem;
+    }
+    .question-prompt {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      padding-top: 1rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    [data-theme="dark"] .question-prompt {
+      border-top-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* 4 Role Cards Grid */
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 1250px;
+    }
+
+    .role-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 2.2rem 1.5rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.08);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .role-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Card Variations */
+    .role-card.admin { border-top: 4px solid var(--accent-yellow); }
+    .role-card.hod { border-top: 4px solid var(--accent-green); }
+    .role-card.faculty { border-top: 4px solid var(--accent-blue); }
+    .role-card.student { border-top: 4px solid var(--accent-purple); }
+
+    .icon-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      font-size: 2rem;
+      transition: transform 0.2s;
+    }
+    .role-card:hover .icon-circle {
+      transform: scale(1.08);
+    }
+
+    .admin .icon-circle { background: var(--accent-yellow-light); color: var(--accent-yellow); }
+    .hod .icon-circle { background: var(--accent-green-light); color: var(--accent-green); }
+    .faculty .icon-circle { background: var(--accent-blue-light); color: var(--accent-blue); }
+    .student .icon-circle { background: var(--accent-purple-light); color: var(--accent-purple); }
+
+    .role-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+    .role-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      min-height: 40px;
+      margin-bottom: 1.5rem;
+    }
+
+    .portal-link {
+      margin-top: auto;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      text-decoration: none;
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .admin .portal-link { color: #d97706; background: rgba(245, 158, 11, 0.08); }
+    .admin .portal-link:hover { background: #f59e0b; color: #fff; }
+
+    .hod .portal-link { color: #059669; background: rgba(16, 185, 129, 0.08); }
+    .hod .portal-link:hover { background: #10b981; color: #fff; }
+
+    .faculty .portal-link { color: #2563eb; background: rgba(59, 130, 246, 0.08); }
+    .faculty .portal-link:hover { background: #3b82f6; color: #fff; }
+
+    .student .portal-link { color: #7c3aed; background: rgba(139, 92, 246, 0.08); }
+    .student .portal-link:hover { background: #8b5cf6; color: #fff; }
+
+    /* Login Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2.2rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .modal-header-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+    }
+    .modal-title { font-size: 1.35rem; font-weight: 800; color: var(--text-main); }
+    .modal-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main); }
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 0.95rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border 0.2s;
+      background: #fff;
+      color: #0f172a;
+    }
+    [data-theme="dark"] .form-control {
+      background: #1e293b;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+    .form-control:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2); }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    /* Floating AI Bot button */
+    .floating-bot {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #f59e0b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+      cursor: pointer;
+      z-index: 50;
+      transition: transform 0.2s;
+    }
+    .floating-bot:hover { transform: scale(1.1); }
+
+    /* Flash Alerts */
+    .flash-alert {
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+    .flash-alert.err { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+    .flash-alert.info { background: #dbeafe; color: #2563eb; border: 1px solid #93c5fd; }
+
+    @media (max-width: 1024px) {
+      .role-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .role-grid { grid-template-columns: 1fr; }
+      .college-name { font-size: 1.6rem; }
+      .top-navbar { padding: 0.5rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="top-navbar">
+    <div class="brand-group">
+      <img src="/static/images/logo.png" alt="HIT Logo" class="brand-logo-img">
+      <div class="brand-text"><span>HITECH</span> | HIT Smart Academic Dashboard</div>
+    </div>
+
+    <div class="top-right-group">
+      <div class="clock-pill">
+        <span>🕒</span>
+        <span id="liveClock">Loading clock...</span>
+      </div>
+
+      <select class="theme-select" onchange="switchTheme(this.value)">
+        <option value="auto">Auto ∨</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="hero-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="width: 100%; max-width: 780px;">
+          {% for cat, msg in messages %}
+            <div class="flash-alert {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="title-banner">
+      <h1 class="college-name">Hindusthan Institute of Technology</h1>
+      <p class="system-subtitle">HIT Smart Academic Dashboard | Command & Intelligence System</p>
+      <div class="question-prompt">Who are you? Select your portal to log in:</div>
+    </div>
+
+    <!-- 4 Role Cards Grid -->
+    <div class="role-grid">
+      <!-- Admin Card -->
+      <div class="role-card admin" onclick="openLogin('admin')">
+        <div class="icon-circle">🛡️</div>
+        <div class="role-title">ADMIN</div>
+        <div class="role-desc">College-Wide Management &amp; Control Center</div>
+        <span class="portal-link">Login Portal &rarr;</span>
+      </div>
+
+      <!-- HOD Card -->
+      <div class="role-card hod" onclick="openLogin('hod')">
+        <div class="icon-circle">🏢</div>
+        <div class="role-title">HOD</div>
+        <div class="role-desc">Head of Departmental Analytics &amp; Control</div>
+        <span class="portal-link">Login Portal &rarr;</span>
+      </div>
+
+      <!-- Faculty Card -->
+      <div class="role-card faculty" onclick="openLogin('faculty')">
+        <div class="icon-circle">👨‍🏫</div>
+        <div class="role-title">FACULTY</div>
+        <div class="role-desc">Daily Attendance, Marks &amp; Teaching Hub</div>
+        <span class="portal-link">Login Portal &rarr;</span>
+      </div>
+
+      <!-- Student Card -->
+      <div class="role-card student" onclick="openLogin('student')">
+        <div class="icon-circle">🎓</div>
+        <div class="role-title">STUDENT</div>
+        <div class="role-desc">Register Number Personal Academic View</div>
+        <span class="portal-link">Login Portal &rarr;</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Login Modal -->
+  <div class="modal-backdrop" id="loginModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeLogin()">&times;</button>
+      <div class="modal-header-icon" id="modalIcon">🛡️</div>
+      <h3 class="modal-title" id="modalTitle">Portal Login</h3>
+      <p class="modal-subtitle" id="modalSub">Enter your institutional credentials below</p>
+
+      <form action="/login" method="POST" id="authForm">
+        <input type="hidden" name="role" id="formRole" value="admin">
+
+        <div class="form-group" id="identifierGroup">
+          <label id="identifierLabel" for="username">Username or Institutional Email</label>
+          <input type="text" id="username" name="email" class="form-control" required placeholder="Enter username or email">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" class="form-control" required placeholder="Enter password">
+          <div id="pwdHint" style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;"></div>
+        </div>
+
+        <button type="submit" class="btn-login" id="modalBtn" style="background:#f59e0b;">Sign In to Portal</button>
+      </form>
+
+      <div id="forgotWrap" style="text-align:center; margin-top:1rem;">
+        <a href="javascript:void(0)" onclick="handleForgot()" style="font-size:0.82rem; color:var(--text-muted); text-decoration:none; font-weight:600;">Forgot Password?</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Assistant Bot -->
+  <div class="floating-bot" title="HIT Smart Assistant" onclick="alert('HIT Smart Academic Assistant is ready to help! Select your portal to begin.')">🤖</div>
+
+  <script>
+    // Live Clock matching screenshots
+    function updateClock() {
+      const now = new Date();
+      const options = {
+        timeZone: 'Asia/Kolkata',
+        weekday: 'short',
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      };
+      document.getElementById('liveClock').textContent = now.toLocaleString('en-US', options);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function switchTheme(val) {
+      if (val === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    }
+
+    const modalConfig = {
+      admin: {
+        title: 'Admin Command Center',
+        sub: 'Authorized College Management Access',
+        icon: '🛡️',
+        iconBg: '#fef3c7',
+        color: '#f59e0b',
+        idLabel: 'Admin Username / Email',
+        idPlaceholder: 'admin or admin@hit.edu.in',
+        idName: 'email',
+        pwdHint: 'Default: HIT2026 or institutional admin password'
+      },
+      hod: {
+        title: 'HOD Departmental Hub',
+        sub: 'Head of Department Analytics & Authority',
+        icon: '🏢',
+        iconBg: '#d1fae5',
+        color: '#10b981',
+        idLabel: 'HOD Official Email',
+        idPlaceholder: 'arunkumar@hit.edu.in',
+        idName: 'email',
+        pwdHint: 'Fixed HOD Password: HIT2026'
+      },
+      faculty: {
+        title: 'Faculty Academic Portal',
+        sub: 'Teaching Staff & Marks Management',
+        icon: '👨‍🏫',
+        iconBg: '#dbeafe',
+        color: '#3b82f6',
+        idLabel: 'Faculty Email (@hit.edu.in)',
+        idPlaceholder: 'senthilkumar@hit.edu.in',
+        idName: 'email',
+        pwdHint: 'Fixed Faculty Password: HIT2026'
+      },
+      student: {
+        title: 'Student Academic View',
+        sub: 'Attendance, Marksheets & Profile',
+        icon: '🎓',
+        iconBg: '#ede9fe',
+        color: '#8b5cf6',
+        idLabel: 'Student Register Number',
+        idPlaceholder: 'e.g. 720825103001',
+        idName: 'reg_no',
+        pwdHint: 'Default: Last 6 digits of your Register Number'
+      }
+    };
+
+    let activeRole = 'admin';
+
+    function openLogin(role) {
+      activeRole = role;
+      const cfg = modalConfig[role];
+      document.getElementById('modalTitle').textContent = cfg.title;
+      document.getElementById('modalSub').textContent = cfg.sub;
+      document.getElementById('modalIcon').textContent = cfg.icon;
+      document.getElementById('modalIcon').style.background = cfg.iconBg;
+      document.getElementById('formRole').value = role;
+
+      const input = document.getElementById('username');
+      input.name = cfg.idName;
+      input.placeholder = cfg.idPlaceholder;
+      document.getElementById('identifierLabel').textContent = cfg.idLabel;
+      document.getElementById('pwdHint').textContent = cfg.pwdHint;
+
+      const btn = document.getElementById('modalBtn');
+      btn.style.background = cfg.color;
+      btn.textContent = `Sign In as ${role.toUpperCase()}`;
+
+      document.getElementById('loginModal').classList.add('open');
+      input.focus();
+    }
+
+    function closeLogin() {
+      document.getElementById('loginModal').classList.remove('open');
+    }
+
+    function handleForgot() {
+      if (activeRole === 'student') {
+        const reg = document.getElementById('username').value.trim();
+        if (!reg) {
+          alert('Please enter your Register Number first in the input field.');
+          return;
+        }
+        window.location.href = '/forgot?role=student&who=' + encodeURIComponent(reg);
+      } else {
+        alert('Password for staff is configured by institutional administration. Fixed default: HIT2026');
+      }
+    }
+  </script>
+</body>
+</html>

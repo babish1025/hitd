@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HITECH | HIT Smart Academic Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc; --card-bg: #ffffff; --card-border: #e2e8f0;
+      --text: #0f172a; --text-muted: #64748b; --accent: #f59e0b;
+      --accent-hover: #d97706; --nav-bg: #ffffff;
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a; --card-bg: #1e293b; --card-border: #334155;
+      --text: #f8fafc; --text-muted: #94a3b8; --nav-bg: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Navbar ── */
+    .header-bar {
+      background: var(--nav-bg); border-bottom: 1px solid var(--card-border);
+      padding: 0.6rem 1.5rem; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .brand-left { display: flex; align-items: center; gap: 0.65rem; }
+    .brand-left img { width: 32px; height: 32px; object-fit: contain; }
+    .brand-title { font-size: 0.95rem; font-weight: 700; }
+    .brand-title span { color: var(--accent); font-weight: 800; }
+    .header-right { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .pill-btn {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: #fff; border: 1px solid var(--card-border);
+      padding: 0.32rem 0.8rem; border-radius: 9999px;
+      font-size: 0.78rem; font-weight: 600; color: var(--text);
+      cursor: pointer; text-decoration: none; white-space: nowrap;
+    }
+    .pill-clock { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+    .pill-user  { background: #fef3c7; color: #92400e; border-color: #fcd34d; font-weight: 700; }
+
+    /* ── Subnav ── */
+    .subnav-bar {
+      background: var(--nav-bg); border-bottom: 1px solid var(--card-border);
+      padding: 0.45rem 1.5rem; display: flex; gap: 0.3rem; overflow-x: auto; white-space: nowrap;
+    }
+    .nav-tab {
+      padding: 0.42rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+      border: 1px solid transparent; background: transparent; color: var(--text-muted);
+      cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; transition: all 0.18s;
+    }
+    .nav-tab:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+    .nav-tab.active { background: #fef3c7; color: #92400e; border-color: #fde68a; font-weight: 700; }
+
+    main { max-width: 1440px; width: 100%; margin: 0 auto; padding: 1.5rem; flex: 1; }
+    .tab-view { display: none; }
+    .tab-view.active { display: block; }
+
+    /* ── Page Headers ── */
+    .page-head {
+      margin-bottom: 1.4rem; display: flex; justify-content: space-between;
+      align-items: flex-start; flex-wrap: wrap; gap: 1rem;
+    }
+    .head-title { font-size: 1.45rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; }
+    .head-sub { font-size: 0.83rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 0.48rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+      border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text);
+      cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.18s;
+    }
+    .btn:hover { background: rgba(0,0,0,0.04); }
+    .btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-green  { background: #10b981; color: white; border-color: #10b981; }
+    .btn-green:hover { background: #059669; }
+    .btn-blue   { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .btn-blue:hover { background: #2563eb; }
+    .btn-red    { background: #ef4444; color: white; border-color: #ef4444; }
+    .btn-red:hover { background: #dc2626; }
+
+    /* ── Search & Filter bar ── */
+    .action-row {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.2rem;
+    }
+    .search-input-wrap {
+      display: flex; align-items: center; background: var(--card-bg);
+      border: 1px solid var(--card-border); border-radius: 8px;
+      padding: 0.42rem 0.8rem; gap: 0.4rem; min-width: 260px;
+    }
+    .search-input-wrap input { border: none; outline: none; background: transparent; color: var(--text); font-size: 0.86rem; width: 100%; }
+    .filter-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+    .chip-active { background: #fef3c7 !important; color: #92400e !important; border-color: #fde68a !important; }
+
+    /* ── Student Cards ── */
+    .student-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 1rem;
+    }
+    .s-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px;
+      padding: 1.15rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      display: flex; flex-direction: column; gap: 0.7rem;
+    }
+    .s-top { display: flex; align-items: center; gap: 0.7rem; }
+    .s-avatar {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1rem;
+    }
+    .s-name { font-weight: 700; font-size: 0.93rem; }
+    .s-reg  { font-size: 0.77rem; color: var(--text-muted); }
+    .s-badge {
+      display: inline-block; padding: 0.18rem 0.5rem; border-radius: 5px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 0.2rem;
+    }
+    .badge-day { background: #dbeafe; color: #1e40af; }
+    .badge-hos { background: #fef3c7; color: #92400e; }
+    .s-stats-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; text-align: center;
+      background: rgba(0,0,0,0.02); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--card-border);
+    }
+    .stat-k { font-size: 0.68rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+    .stat-v { font-size: 1.08rem; font-weight: 800; }
+    .s-actions { display: flex; gap: 0.3rem; }
+    .s-actions .btn { flex: 1; justify-content: center; padding: 0.38rem 0.4rem; font-size: 0.76rem; }
+
+    /* ── Modals ── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: var(--card-bg); border-radius: 18px; width: 100%; max-width: 920px;
+      max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      border: 1px solid var(--card-border);
+    }
+    .modal-sm { max-width: 620px; }
+    .modal-top {
+      padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--card-border);
+      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0;
+      background: var(--card-bg); z-index: 10;
+    }
+    .modal-top-title { font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; }
+    .modal-close-btn { background: none; border: none; font-size: 1.3rem; color: var(--text-muted); cursor: pointer; padding: 0.2rem; }
+    .modal-subtabs {
+      display: flex; gap: 0.3rem; padding: 0.65rem 1.6rem; border-bottom: 1px solid var(--card-border);
+      background: rgba(0,0,0,0.01); overflow-x: auto;
+    }
+    .modal-tab-btn {
+      padding: 0.4rem 0.85rem; border-radius: 7px; font-size: 0.8rem; font-weight: 600;
+      border: 1px solid transparent; background: transparent; color: var(--text-muted); cursor: pointer;
+    }
+    .modal-tab-btn.active { background: #fef3c7; color: #92400e; border-color: #fde68a; font-weight: 700; }
+
+    /* Modal body layout */
+    .modal-body-layout { display: grid; grid-template-columns: 240px 1fr; gap: 1.5rem; padding: 1.6rem; }
+    .m-left-col {
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.9rem;
+      border-right: 1px solid var(--card-border); padding-right: 1.4rem;
+    }
+    .m-avatar-circle {
+      width: 86px; height: 86px; border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.9rem; font-weight: 800; border: 3px solid #fef3c7;
+    }
+    .m-student-name { font-size: 1.1rem; font-weight: 800; line-height: 1.2; }
+    .m-student-reg { font-size: 0.83rem; color: var(--text-muted); font-weight: 600; }
+    .m-metrics-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+    .m-metric-card { border: 1px solid var(--card-border); border-radius: 9px; padding: 0.65rem 0.4rem; text-align: center; }
+    .m-metric-card.attn { border-color: #93c5fd; background: #eff6ff; }
+    .m-metric-card.cgpa { border-color: #fde68a; background: #fffbeb; }
+    .m-m-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); }
+    .m-m-val { font-size: 1.2rem; font-weight: 800; margin-top: 0.15rem; }
+    .m-action-btn {
+      width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+      border: 1px solid var(--card-border); display: flex; align-items: center;
+      justify-content: center; gap: 0.35rem; cursor: pointer; text-decoration: none;
+    }
+    .btn-wa   { border-color: #10b981; color: #059669; background: #ecfdf5; }
+    .btn-wa:hover { background: #10b981; color: white; }
+    .btn-route { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
+    .btn-route:hover { background: #3b82f6; color: white; }
+
+    /* Info fields */
+    .info-fields-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; }
+    .field-card { border: 1px solid var(--card-border); border-radius: 9px; padding: 0.7rem 0.9rem; }
+    .field-label { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+    .field-val { font-size: 0.88rem; font-weight: 600; margin-top: 0.2rem; word-break: break-word; }
+    .badge-active { background: #d1fae5; color: #065f46; padding: 0.18rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700; }
+    .aadhaar-box {
+      display: flex; align-items: center; gap: 0.35rem; background: #fffbeb; border: 1px solid #fde68a;
+      color: #b45309; padding: 0.28rem 0.65rem; border-radius: 7px; font-size: 0.78rem; font-weight: 700;
+    }
+
+    /* ── Forms ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-bottom: 0.9rem; }
+    .form-group-full { margin-bottom: 0.9rem; }
+    .form-label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .form-control {
+      width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--card-border);
+      border-radius: 8px; font-size: 0.86rem; outline: none; background: var(--bg); color: var(--text);
+    }
+    .form-control:focus { border-color: var(--accent); }
+    .form-pad { padding: 1.4rem; }
+
+    /* ── Settings & GPS ── */
+    .loc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }
+    .loc-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 15px; padding: 1.4rem; }
+
+    /* ── Tables ── */
+    .table-container { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 15px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.86rem; }
+    th { padding: 0.8rem 1rem; background: rgba(0,0,0,0.02); font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--card-border); }
+    td { padding: 0.78rem 1rem; border-bottom: 1px solid var(--card-border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(0,0,0,0.015); }
+
+    /* ── Timetable cell edit ── */
+    .tt-cell { position: relative; }
+    .tt-cell input {
+      width: 100%; border: none; background: transparent; font-weight: 700; font-size: 0.82rem;
+      color: #2563eb; padding: 0.2rem 0.4rem; border-radius: 4px; cursor: pointer;
+      text-align: center;
+    }
+    .tt-cell input:focus { background: #eff6ff; outline: 2px solid #3b82f6; }
+    .tt-day-cell { font-weight: 700; padding: 0.75rem 1rem; }
+
+    /* ── Floating Bot ── */
+    .floating-bot {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; width: 48px; height: 48px; border-radius: 50%;
+      background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; box-shadow: 0 6px 18px rgba(245,158,11,0.4); cursor: pointer; z-index: 50;
+    }
+
+    /* ── Flash messages ── */
+    .flash-bar { padding: 0.7rem 1.5rem; background: #d1fae5; color: #065f46; font-weight: 600; font-size: 0.85rem; border-bottom: 1px solid #6ee7b7; }
+    .flash-bar.err { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+    /* ── Dashboard Stats ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 13px; padding: 1.1rem 1.3rem; }
+    .stat-card-val { font-size: 2rem; font-weight: 800; margin-top: 0.3rem; }
+
+    @media (max-width: 900px) {
+      .modal-body-layout { grid-template-columns: 1fr; }
+      .m-left-col { border-right: none; border-bottom: 1px solid var(--card-border); padding-bottom: 1.2rem; padding-right: 0; }
+      .info-fields-grid { grid-template-columns: 1fr 1fr; }
+      .loc-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Flash messages -->
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+      <div class="flash-bar {% if cat == 'err' %}err{% endif %}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- ── Top Navbar ── -->
+  <header class="header-bar">
+    <div class="brand-left">
+      <img src="/static/images/logo.png" alt="HIT Logo">
+      <div class="brand-title"><span>HITECH</span> | HIT Smart Academic Dashboard</div>
+    </div>
+    <div class="header-right">
+      <div class="pill-btn pill-clock">🕒 <span id="liveClock">Loading…</span></div>
+      <a href="javascript:void(0)" onclick="switchNav('tab-settings', event)" class="pill-btn">📍 GPS &amp; Comm</a>
+      <select class="pill-btn" onchange="toggleTheme(this.value)">
+        <option value="auto">Auto ∨</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+      <div class="pill-btn pill-user" onclick="confirmLogout()">👤 {{ user_name }} ∨</div>
+    </div>
+  </header>
+
+  <!-- ── Secondary Nav ── -->
+  <nav class="subnav-bar" id="mainNav">
+    <button class="nav-tab" onclick="switchNav('tab-dashboard', event)">📊 Dashboard</button>
+    <button class="nav-tab active" onclick="switchNav('tab-students', event)">🎓 Students</button>
+    <button class="nav-tab" onclick="switchNav('tab-faculty', event)">👨‍🏫 Faculty</button>
+    <button class="nav-tab" onclick="switchNav('tab-hods', event)">⭐ HODs</button>
+    <button class="nav-tab" onclick="switchNav('tab-departments', event)">🏢 Departments</button>
+    <button class="nav-tab" onclick="switchNav('tab-profiles', event)">👤 Profiles</button>
+    <button class="nav-tab" onclick="switchNav('tab-timetable', event)">📅 Timetable</button>
+    <button class="nav-tab" onclick="switchNav('tab-settings', event)">📍 College GPS</button>
+    <button class="nav-tab" onclick="switchNav('tab-audit', event)">📋 Audit Logs</button>
+  </nav>
+
+  <main>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: STUDENTS
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-students" class="tab-view active">
+      <div class="page-head">
+        <div>
+          <h1 class="head-title">🎓 Student Management</h1>
+          <div class="head-sub">Database Status: <span style="color:#10b981;font-weight:700;">Connected to Supabase PostgreSQL (ap-northeast-2)</span></div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          {% if user_role in ['admin','hod','faculty','professor'] %}
+          <button class="btn btn-primary" onclick="openModal('addStudentModal')">➕ Add New Student</button>
+          {% endif %}
+          <button class="btn" onclick="exportCSV()">📥 Export CSV</button>
+          <button class="btn" onclick="alert('Trash Bin is currently clean.')">🗑 Trash Bin</button>
+        </div>
+      </div>
+
+      <!-- Search & Filter Row -->
+      <div class="action-row">
+        <div class="search-input-wrap">
+          <span>🔍</span>
+          <input type="text" id="studentSearch" placeholder="Search name or Reg..." oninput="filterStudents()">
+        </div>
+        <div class="filter-chips">
+          <select class="btn" id="deptFilter" onchange="filterStudents()">
+            <option value="all">Department: All</option>
+            <option value="CSE">CSE</option>
+            <option value="ECE">ECE</option>
+            <option value="AIDS">AIDS</option>
+            <option value="MECH">MECH</option>
+          </select>
+          <button class="btn chip-active" id="chip-all"       onclick="setChip('all')">All ({{ students|length }})</button>
+          <button class="btn" id="chip-hosteller"             onclick="setChip('hosteller')">Hostellers</button>
+          <button class="btn" id="chip-dayscholar"            onclick="setChip('dayscholar')">Day Scholars</button>
+          <button class="btn" id="chip-high_attn"             onclick="setChip('high_attn')">Attn ≥ 90%</button>
+          <button class="btn" id="chip-low_attn"              onclick="setChip('low_attn')">Shortage (&lt;75%)</button>
+          <button class="btn" id="chip-high_cgpa"             onclick="setChip('high_cgpa')">Top CGPA</button>
+        </div>
+      </div>
+
+      <!-- Student Cards -->
+      <div class="student-grid" id="studentsGrid">
+        {% for s in students %}
+        <div class="s-card"
+          data-name="{{ s.name|lower }}"
+          data-reg="{{ s.reg_no }}"
+          data-type="{{ (s.day_hos or '')|lower }}"
+          data-dept="{{ s.get('dept_code','CSE')|upper }}"
+          data-attn="{{ s.attendance|float }}"
+          data-cgpa="{{ s.cgpa|float }}">
+          <div class="s-top">
+            <div class="s-avatar">{{ s.name[:2]|upper }}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="s-name">{{ s.name }}</div>
+              <div class="s-reg">{{ s.reg_no }}</div>
+              <span class="s-badge {% if 'hos' in (s.day_hos or '')|lower %}badge-hos{% else %}badge-day{% endif %}">
+                {{ s.day_hos or 'Day Scholar' }}
+              </span>
+            </div>
+          </div>
+          <div class="s-stats-row">
+            <div>
+              <div class="stat-k">Attendance</div>
+              <div class="stat-v" style="color:{% if s.attendance|float >= 90 %}#10b981{% elif s.attendance|float >= 75 %}#f59e0b{% else %}#ef4444{% endif %};">
+                {{ s.attendance or 0 }}%
+              </div>
+            </div>
+            <div>
+              <div class="stat-k">CGPA</div>
+              <div class="stat-v" style="color:#d97706;">{{ s.cgpa or '0.00' }}</div>
+            </div>
+          </div>
+          <div class="s-actions">
+            <button class="btn btn-primary" onclick='openStudentModal({{ s|tojson|safe }})'>👁 View</button>
+            {% if user_role in ['admin','hod','faculty','professor'] %}
+            <button class="btn btn-blue" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe;" onclick='openEditStudentModal({{ s|tojson|safe }})'>✏ Edit</button>
+            <button class="btn btn-red"  style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;" onclick="confirmDeleteStudent('{{ s.reg_no }}','{{ s.name }}')">🗑 Del</button>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div id="noStudentMsg" style="display:none;text-align:center;padding:3rem;color:var(--text-muted);font-weight:600;">
+        No students match the current filter.
+      </div>
+    </div><!-- /tab-students -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: FACULTY
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-faculty" class="tab-view">
+      <div class="page-head">
+        <div>
+          <h1 class="head-title">👨‍🏫 Faculty Directory</h1>
+          <div class="head-sub">Active faculty members – Hindusthan Institute of Technology</div>
+        </div>
+        {% if user_role in ['admin','hod'] %}
+        <button class="btn btn-primary" onclick="openModal('addFacultyModal')">➕ Add Faculty</button>
+        {% endif %}
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Avatar</th><th>Name</th><th>Email</th><th>Designation</th><th>Department</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in professors %}
+            <tr>
+              <td><div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;">{{ p.name[:2]|upper }}</div></td>
+              <td><strong>{{ p.name }}</strong></td>
+              <td style="font-size:0.82rem;color:var(--text-muted);">{{ p.email }}</td>
+              <td><span class="s-badge badge-day">{{ p.get('designation','Professor') }}</span></td>
+              <td>{{ p.get('department','CSE') }}</td>
+              <td style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                <a href="https://wa.me/91{{ p.get('mobile','') }}" target="_blank" class="btn btn-green" style="font-size:0.76rem;padding:0.3rem 0.6rem;">💬 WA</a>
+                {% if user_role in ['admin','hod'] %}
+                <button class="btn btn-blue" style="font-size:0.76rem;padding:0.3rem 0.6rem;background:#eff6ff;color:#2563eb;border-color:#bfdbfe;" onclick='openEditFacultyModal({{ p|tojson|safe }})'>✏ Edit</button>
+                <button class="btn btn-red"  style="font-size:0.76rem;padding:0.3rem 0.6rem;background:#fee2e2;color:#dc2626;border-color:#fca5a5;" onclick="confirmDeleteFaculty({{ p.get('id',0) }},'{{ p.name }}')">🗑 Del</button>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /tab-faculty -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: HODs
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-hods" class="tab-view">
+      <div class="page-head">
+        <div>
+          <h1 class="head-title">⭐ Head of Departments</h1>
+          <div class="head-sub">Academic department leaders</div>
+        </div>
+        {% if user_role == 'admin' %}
+        <button class="btn btn-primary" onclick="openModal('addHodModal')">➕ Add HOD</button>
+        {% endif %}
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr><th>Avatar</th><th>Name</th><th>Faculty ID</th><th>Department</th><th>Mobile</th><th>Specialization</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for h in hods %}
+            <tr>
+              <td><div style="width:36px;height:36px;border-radius:50%;background:#059669;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;">{{ h.name[:2]|upper }}</div></td>
+              <td><strong>{{ h.name }}</strong></td>
+              <td><code style="font-size:0.8rem;">{{ h.faculty_id }}</code></td>
+              <td><span class="s-badge badge-day">{{ h.dept_code }}</span> {{ h.department }}</td>
+              <td>{{ h.mobile }}</td>
+              <td style="font-size:0.8rem;color:var(--text-muted);">{{ h.specialization }}</td>
+              <td style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                <button class="btn btn-primary" style="font-size:0.76rem;padding:0.3rem 0.6rem;" onclick="viewHodDetail({{ h|tojson|safe }})">👁 View</button>
+                {% if user_role == 'admin' %}
+                <button class="btn" style="font-size:0.76rem;padding:0.3rem 0.6rem;background:#eff6ff;color:#2563eb;border-color:#bfdbfe;" onclick='openEditHodModal({{ h|tojson|safe }})'>✏ Edit</button>
+                <button class="btn" style="font-size:0.76rem;padding:0.3rem 0.6rem;background:#fee2e2;color:#dc2626;border-color:#fca5a5;" onclick="confirmDeleteHod({{ h.id }},'{{ h.name }}')">🗑 Del</button>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /tab-hods -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: DEPARTMENTS
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-departments" class="tab-view">
+      <div class="page-head">
+        <div>
+          <h1 class="head-title">🏢 Academic Departments</h1>
+          <div class="head-sub">Hindusthan Institute of Technology Engineering Branches</div>
+        </div>
+      </div>
+      <div class="student-grid">
+        {% for d in departments %}
+        <div class="s-card">
+          <div style="font-size:1.3rem;font-weight:800;color:#d97706;">{{ d.code }}</div>
+          <div style="font-size:1rem;font-weight:700;">{{ d.name }}</div>
+          <div style="font-size:0.83rem;color:var(--text-muted);">HOD: <strong>{{ d.hod_name }}</strong></div>
+          <div class="s-stats-row">
+            <div><div class="stat-k">Faculty</div><div class="stat-v" style="color:#2563eb;">{{ d.faculty_count }}</div></div>
+            <div><div class="stat-k">Enrolled</div><div class="stat-v" style="color:#10b981;">{{ d.student_count }}</div></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div><!-- /tab-departments -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: PROFILES HUB
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-profiles" class="tab-view">
+      <div class="page-head">
+        <div>
+          <h1 class="head-title">👤 Profile &amp; Photo Management Hub</h1>
+          <div class="head-sub">Centralized profile synchronization across Student, Faculty, and HOD portals</div>
+        </div>
+        <div id="profileAddBtn" style="display:flex;gap:0.4rem;">
+          <!-- Button injected by showProfileSubtab() -->
+        </div>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div style="display:flex;gap:0.4rem;margin-bottom:1.2rem;flex-wrap:wrap;">
+        <button class="btn" id="profTabStudents" onclick="showProfileSubtab('students',this)">🎓 Student Profiles ({{ students|length }})</button>
+        <button class="btn btn-primary" id="profTabFaculty" onclick="showProfileSubtab('faculty',this)">👨‍🏫 Faculty Profiles ({{ professors|length }})</button>
+        <button class="btn" id="profTabHods" onclick="showProfileSubtab('hods',this)">⭐ HOD Profiles ({{ hods|length }})</button>
+      </div>
+
+      <!-- Students profiles table -->
+      <div id="profSubStudents" class="table-container" style="display:none;">
+        <table>
+          <thead><tr><th>Avatar</th><th>Name</th><th>Reg No</th><th>Department</th><th>Attendance</th><th>CGPA</th><th>WhatsApp</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for s in students %}
+            <tr>
+              <td><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;">{{ s.name[:2]|upper }}</div></td>
+              <td><strong>{{ s.name }}</strong></td>
+              <td><code style="font-size:0.8rem;">{{ s.reg_no }}</code></td>
+              <td><span class="s-badge badge-day">{{ s.get('dept_code','CSE') }}</span></td>
+              <td style="font-weight:700;color:{% if s.attendance|float >= 90 %}#10b981{% elif s.attendance|float >= 75 %}#f59e0b{% else %}#ef4444{% endif %};">{{ s.attendance or 0 }}%</td>
+              <td style="font-weight:700;color:#d97706;">{{ s.cgpa or '-' }}</td>
+              <td style="font-size:0.8rem;">{{ s.whatsapp or '-' }}</td>
+              <td style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+                <button class="btn btn-primary" style="font-size:0.74rem;padding:0.28rem 0.5rem;" onclick='openStudentModal({{ s|tojson|safe }})'>👁 View</button>
+                {% if user_role in ['admin','hod','faculty','professor'] %}
+                <button class="btn" style="font-size:0.74rem;padding:0.28rem 0.5rem;background:#eff6ff;color:#2563eb;border-color:#bfdbfe;" onclick='openEditStudentModal({{ s|tojson|safe }})'>✏ Edit</button>
+                <button class="btn" style="font-size:0.74rem;padding:0.28rem 0.5rem;background:#fee2e2;color:#dc2626;border-color:#fca5a5;" onclick="confirmDeleteStudent('{{ s.reg_no }}','{{ s.name }}')">🗑 Del</button>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Faculty profiles table -->
+      <div id="profSubFaculty" class="table-container">
+        <table>
+          <thead><tr><th>Photo</th><th>Name</th><th>Email</th><th>Designation</th><th>Department</th><th>Mobile</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for p in professors %}
+            <tr>
+              <td><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#6366f1);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;">{{ p.name[:2]|upper }}</div></td>
+              <td><strong>{{ p.name }}</strong></td>
+              <td style="font-size:0.82rem;color:var(--text-muted);">{{ p.email }}</td>
+              <td><span class="s-badge badge-day">{{ p.get('designation','Professor') }}</span></td>
+              <td>{{ p.get('department','CSE') }}</td>
+              <td>{{ p.get('mobile','-') }}</td>
+              <td style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+                {% if user_role in ['admin','hod'] %}
+                <button class="btn" style="font-size:0.74rem;padding:0.28rem 0.5rem;background:#eff6ff;color:#2563eb;border-color:#bfdbfe;" onclick='openEditFacultyModal({{ p|tojson|safe }})'>✏ Edit</button>
+                <button class="btn" style="font-size:0.74rem;padding:0.28rem 0.5rem;background:#fee2e2;color:#dc2626;border-color:#fca5a5;" onclick="confirmDeleteFaculty({{ p.get('id',0) }},'{{ p.name }}')">🗑 Del</button>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- HOD profiles table -->
+      <div id="profSubHods" class="table-container" style="display:none;">
+        <table>
+          <thead><tr><th>Photo</th><th>HOD Name</th><th>Faculty ID</th><th>Department</th><th>Mobile</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for h in hods %}
+            <tr>
+              <td><div style="width:34px;height:34px;border-radius:50%;background:#059669;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;">{{ h.name[:2]|upper }}</div></td>
+              <td><strong>{{ h.name }}</strong></td>
+              <td><code style="font-size:0.8rem;">{{ h.faculty_id }}</code></td>
+              <td><span class="s-badge badge-day">{{ h.dept_code }}</span> {{ h.department }}</td>
+              <td>{{ h.mobile }}</td>
+              <td style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+                <button class="btn btn-primary" style="font-size:0.74rem;padding:0.28rem 0.5rem;" onclick="viewHodDetail({{ h|tojson|safe }})">👁 Profile</button>
+                {% if user_role == 'admin' %}
+                <button class="btn" style="font-size:0.74rem;padding:0.28rem 0.5rem;background:#eff6ff;color:#2563eb;border-color:#bfdbfe;" onclick='openEditHodModal({{ h|tojson|safe }})'>✏ Edit</button>
+                <button class="btn" style="font-size:0.74rem;padding:0.28rem 0.5rem;background:#fee2e2;color:#dc2626;border-color:#fca5a5;" onclick="confirmDeleteHod({{ h.id }},'{{ h.name }}')">🗑 Del</button>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /tab-profiles -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: TIMETABLE
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-timetable" class="tab-view">
+      <div class="page-head">
+        <div>
+          <h1 class="head-title">📅 CSE-A Class Timetable</h1>
+          <div class="head-sub">Weekly Schedule • Batch 2025–2029 {% if user_role in ['admin','hod','faculty','professor'] %}— Click any cell to edit{% endif %}</div>
+        </div>
+        {% if user_role in ['admin','hod','faculty','professor'] %}
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn btn-primary" onclick="saveTimetable()">💾 Save Timetable</button>
+          <button class="btn" onclick="resetTimetable()">↺ Reset</button>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Subject legend -->
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.2rem;">
+        {% for code, subj in subjects.items() %}
+        <span style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:6px;padding:0.2rem 0.5rem;font-size:0.74rem;font-weight:700;" title="{{ subj.name }}">
+          {{ code }}: {{ subj.name[:20] }}…
+        </span>
+        {% endfor %}
+      </div>
+
+      <div class="table-container">
+        <table id="ttTable">
+          <thead>
+            <tr>
+              <th>Day</th>
+              {% for p in periods %}<th style="font-size:0.76rem;">{{ p }}</th>{% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for day, subjs in timetable.items() %}
+            <tr>
+              <td class="tt-day-cell">{{ day }}</td>
+              {% for s in subjs %}
+              <td class="tt-cell">
+                {% if user_role in ['admin','hod','faculty','professor'] %}
+                <input type="text" value="{{ s }}" data-orig="{{ s }}" class="tt-input" style="color:{% if s in ['LIB','TWM'] %}#059669{% else %}#2563eb{% endif %};background:{% if s in ['LIB','TWM'] %}#ecfdf5{% else %}#eff6ff{% endif %};border-radius:4px;padding:0.25rem 0.4rem;border:1px solid transparent;" title="{{ subjects.get(s, {}).get('name', s) }}">
+                {% else %}
+                <span style="font-weight:700;color:#2563eb;background:#eff6ff;padding:0.25rem 0.5rem;border-radius:4px;">{{ s }}</span>
+                {% endif %}
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Subject details -->
+      <div style="margin-top:1.4rem;">
+        <h3 style="font-size:1rem;font-weight:800;margin-bottom:0.9rem;">📚 Subject Details</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Code</th><th>Subject Name</th><th>Hours/Week</th><th>Faculty</th><th>Email</th><th>Kind</th></tr></thead>
+            <tbody>
+              {% for code, subj in subjects.items() %}
+              <tr>
+                <td><code style="font-size:0.82rem;font-weight:700;color:#2563eb;">{{ code }}</code></td>
+                <td><strong>{{ subj.name }}</strong></td>
+                <td style="text-align:center;">{{ subj.hours }}</td>
+                <td>{{ subj.faculty }}</td>
+                <td style="font-size:0.8rem;color:var(--text-muted);">{{ subj.email }}</td>
+                <td><span class="s-badge badge-day">{{ subj.kind }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /tab-timetable -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: GPS & SETTINGS
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-settings" class="tab-view">
+      <div class="page-head">
+        <div>
+          <h1 class="head-title">📍 College Location &amp; Official Coordinates</h1>
+          <div class="head-sub">Configure campus geolocation and institutional communication channels</div>
+        </div>
+        <a href="https://maps.google.com/?q={{ settings.lat }},{{ settings.lng }}" target="_blank" class="btn btn-primary">📍 Preview GPS Navigation</a>
+      </div>
+      <div class="loc-grid">
+        <div class="loc-card">
+          <h3 style="font-size:1.02rem;font-weight:700;color:#d97706;margin-bottom:1rem;">⚙ Institution Coordinates &amp; Contact</h3>
+          <form action="/admin/save_settings" method="POST">
+            <div class="form-group-full">
+              <label class="form-label">Institution / College Name *</label>
+              <input type="text" name="name" class="form-control" value="{{ settings.name }}">
+            </div>
+            <div class="form-group-full">
+              <label class="form-label">Campus Street Address *</label>
+              <input type="text" name="address" class="form-control" value="{{ settings.address }}">
+            </div>
+            <div class="form-row">
+              <div><label class="form-label">City</label><input type="text" name="city" class="form-control" value="{{ settings.city }}"></div>
+              <div><label class="form-label">District</label><input type="text" name="district" class="form-control" value="{{ settings.district }}"></div>
+            </div>
+            <div class="form-row">
+              <div><label class="form-label">State</label><input type="text" name="state" class="form-control" value="{{ settings.state }}"></div>
+              <div><label class="form-label">PIN Code</label><input type="text" name="pincode" class="form-control" value="{{ settings.pincode }}"></div>
+            </div>
+            <div class="form-row">
+              <div><label class="form-label">Latitude (-90 to +90) *</label><input type="text" name="lat" class="form-control" value="{{ settings.lat }}"></div>
+              <div><label class="form-label">Longitude (-180 to +180) *</label><input type="text" name="lng" class="form-control" value="{{ settings.lng }}"></div>
+            </div>
+            <div class="form-row">
+              <div><label class="form-label">Official Phone</label><input type="text" name="phone" class="form-control" value="{{ settings.phone }}"></div>
+              <div><label class="form-label">Official Email</label><input type="text" name="email" class="form-control" value="{{ settings.email }}"></div>
+            </div>
+            <div class="form-row">
+              <div><label class="form-label">Website</label><input type="text" name="website" class="form-control" value="{{ settings.website }}"></div>
+              <div><label class="form-label">Emergency Contact</label><input type="text" name="emergency" class="form-control" value="{{ settings.emergency }}"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">💾 Save Coordinates &amp; Settings</button>
+          </form>
+        </div>
+        <div class="loc-card">
+          <h3 style="font-size:1.02rem;font-weight:700;color:#d97706;margin-bottom:1rem;">📍 Current Coordinates Preview</h3>
+          <div style="border:1px solid var(--card-border);border-radius:11px;padding:1.1rem;background:rgba(0,0,0,0.01);">
+            <h4 style="font-size:1.02rem;font-weight:800;margin-bottom:0.3rem;">{{ settings.name }}</h4>
+            <p style="font-size:0.83rem;color:var(--text-muted);line-height:1.4;">
+              {{ settings.address }}, {{ settings.city }}, {{ settings.district }}, {{ settings.state }} – {{ settings.pincode }}
+            </p>
+            <div style="margin:0.7rem 0;font-size:0.85rem;font-weight:700;color:#2563eb;">
+              Lat: {{ settings.lat }} &nbsp; Lng: {{ settings.lng }}
+            </div>
+            <hr style="border:none;border-top:1px solid var(--card-border);margin:0.75rem 0;">
+            <div style="display:flex;flex-direction:column;gap:0.45rem;font-size:0.83rem;">
+              <div>📞 <strong>Phone:</strong> {{ settings.phone }}</div>
+              <div>✉️ <strong>Email:</strong> {{ settings.email }}</div>
+              <div>🌐 <strong>Website:</strong> <a href="{{ settings.website }}" target="_blank" style="color:#d97706;">{{ settings.website }}</a></div>
+              <div>🚨 <strong>Emergency:</strong> {{ settings.emergency }}</div>
+            </div>
+          </div>
+          <div style="margin-top:0.9rem;padding:0.7rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:0.79rem;color:#1e40af;">
+            🛡 Changes here automatically update navigation &amp; contact details for all authorized users.
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-settings -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: DASHBOARD
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-dashboard" class="tab-view">
+      <div class="page-head">
+        <div>
+          <h1 class="head-title">📊 Executive Command Center</h1>
+          <div class="head-sub">Key Performance Indicators &amp; Institutional Analytics</div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card" style="border-top:4px solid #f59e0b;">
+          <div class="stat-k">Total Enrolled</div>
+          <div class="stat-card-val" style="color:#f59e0b;">{{ stats.total }}</div>
+        </div>
+        <div class="stat-card" style="border-top:4px solid #10b981;">
+          <div class="stat-k">Average Attendance</div>
+          <div class="stat-card-val" style="color:#10b981;">{{ stats.avg_attn }}%</div>
+        </div>
+        <div class="stat-card" style="border-top:4px solid #8b5cf6;">
+          <div class="stat-k">Average CGPA</div>
+          <div class="stat-card-val" style="color:#8b5cf6;">{{ stats.avg_cgpa }}</div>
+        </div>
+        <div class="stat-card" style="border-top:4px solid #ef4444;">
+          <div class="stat-k">Shortage (&lt;75%)</div>
+          <div class="stat-card-val" style="color:#ef4444;">{{ stats.shortage }}</div>
+        </div>
+        <div class="stat-card" style="border-top:4px solid #3b82f6;">
+          <div class="stat-k">Faculty Members</div>
+          <div class="stat-card-val" style="color:#3b82f6;">{{ professors|length }}</div>
+        </div>
+        <div class="stat-card" style="border-top:4px solid #059669;">
+          <div class="stat-k">Departments</div>
+          <div class="stat-card-val" style="color:#059669;">{{ departments|length }}</div>
+        </div>
+      </div>
+      {% if birthdays %}
+      <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:13px;padding:1.1rem;margin-bottom:1.4rem;">
+        <div style="font-weight:800;font-size:1rem;margin-bottom:0.6rem;">🎂 Today's Birthdays!</div>
+        {% for b in birthdays %}
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;">
+          <span style="font-weight:700;">{{ b.name }}</span>
+          <span style="font-size:0.8rem;color:var(--text-muted);">{{ b.reg_no }}</span>
+          <a href="{{ b.wa_link }}" target="_blank" class="btn btn-green" style="font-size:0.76rem;padding:0.25rem 0.5rem;">💬 Wish</a>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div><!-- /tab-dashboard -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: AUDIT LOG
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-audit" class="tab-view">
+      <div class="page-head">
+        <div><h1 class="head-title">📋 Institutional Audit Logs</h1><div class="head-sub">System activity and synchronizations</div></div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Target</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>2026-11-21 11:30 AM</td><td>admin</td><td>Database Synchronization</td><td>Supabase PostgreSQL</td><td><span class="badge-active">Success</span></td></tr>
+            <tr><td>2026-11-21 11:00 AM</td><td>senthilkumar@hit.edu.in</td><td>Faculty Portal Sign-In</td><td>CSE-A Class</td><td><span class="badge-active">Authorized</span></td></tr>
+            <tr><td>2026-11-21 10:20 AM</td><td>system</td><td>Cloud Seeding</td><td>63 Students, 7 Faculty</td><td><span class="badge-active">Synced</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /tab-audit -->
+
+  </main>
+
+  <!-- ════════════════════════════════════
+       STUDENT DETAIL VIEW MODAL
+  ════════════════════════════════════ -->
+  <div class="modal-backdrop" id="studentDetailModal">
+    <div class="modal-card">
+      <div class="modal-top">
+        <div class="modal-top-title">
+          🎓 Student Details •
+          <span id="mReg">—</span>
+          <span class="badge-active">Active Enrolled</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <div class="aadhaar-box">🛡 Aadhaar: <span id="mAadhaarMasked">••••••••0000</span>
+            <button onclick="toggleAadhaar()" style="background:none;border:none;cursor:pointer;">👁</button>
+          </div>
+          <button class="modal-close-btn" onclick="closeModal('studentDetailModal')">×</button>
+        </div>
+      </div>
+      <div class="modal-subtabs">
+        <button class="modal-tab-btn active" onclick="switchModalTab('personal',this)">👤 Personal</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('contact',this)">📞 Contact</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('academic',this)">🎓 Academic</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('overview',this)">📊 Overview</button>
+      </div>
+      <div class="modal-body-layout">
+        <div class="m-left-col">
+          <div class="m-avatar-circle" id="mAvatar">AB</div>
+          <div>
+            <div class="m-student-name" id="mName">—</div>
+            <div class="m-student-reg" id="mRegSub">—</div>
+            <span class="s-badge badge-day" id="mType" style="margin-top:0.35rem;">DAY SCHOLAR</span>
+          </div>
+          <div class="m-metrics-grid">
+            <div class="m-metric-card attn"><div class="m-m-title">ATTENDANCE</div><div class="m-m-val" id="mAttn" style="color:#2563eb;">—%</div></div>
+            <div class="m-metric-card cgpa"><div class="m-m-title">CGPA</div><div class="m-m-val" id="mCgpa" style="color:#d97706;">—</div></div>
+          </div>
+          <a href="#" id="mParentWa" target="_blank" class="m-action-btn btn-wa">💬 Parent WhatsApp</a>
+          <a href="#" id="mRoute" target="_blank" class="m-action-btn btn-route">📍 Directions Route</a>
+        </div>
+        <div>
+          <div id="mtab-personal" class="mtab-content">
+            <h4 style="font-size:0.93rem;font-weight:800;margin-bottom:0.9rem;">📋 Personal Information</h4>
+            <div class="info-fields-grid">
+              <div class="field-card"><div class="field-label">DATE OF BIRTH</div><div class="field-val" id="mDob">—</div></div>
+              <div class="field-card"><div class="field-label">GENDER</div><div class="field-val" id="mGender">—</div></div>
+              <div class="field-card"><div class="field-label">BLOOD GROUP</div><div class="field-val" id="mBlood">—</div></div>
+              <div class="field-card"><div class="field-label">COMMUNITY</div><div class="field-val" id="mComm">—</div></div>
+              <div class="field-card"><div class="field-label">ADMISSION QUOTA</div><div class="field-val" id="mQuota">—</div></div>
+              <div class="field-card"><div class="field-label">RESIDENCE TYPE</div><div class="field-val" id="mRes">—</div></div>
+            </div>
+            <div class="field-card" style="margin-top:0.75rem;display:flex;justify-content:space-between;align-items:center;">
+              <div><div class="field-label">AADHAAR NUMBER</div><div class="field-val" id="mAadhaarFull">••••••••0000</div></div>
+              <button class="btn" onclick="toggleAadhaar()" id="mAadhaarBtn">👁 Show</button>
+            </div>
+          </div>
+          <div id="mtab-contact" class="mtab-content" style="display:none;">
+            <h4 style="font-size:0.93rem;font-weight:800;margin-bottom:0.9rem;">📞 Contact &amp; Guardian Information</h4>
+            <div class="info-fields-grid">
+              <div class="field-card"><div class="field-label">FATHER NAME</div><div class="field-val" id="mFather">—</div></div>
+              <div class="field-card"><div class="field-label">FATHER MOBILE</div><div class="field-val" id="mFatherMob">—</div></div>
+              <div class="field-card"><div class="field-label">MOTHER NAME</div><div class="field-val" id="mMother">—</div></div>
+              <div class="field-card"><div class="field-label">MOTHER MOBILE</div><div class="field-val" id="mMotherMob">—</div></div>
+              <div class="field-card"><div class="field-label">STUDENT WHATSAPP</div><div class="field-val" id="mWa">—</div></div>
+              <div class="field-card"><div class="field-label">PERSONAL PHONE</div><div class="field-val" id="mPhone">—</div></div>
+            </div>
+            <div class="field-card" style="margin-top:0.75rem;">
+              <div class="field-label">PERMANENT ADDRESS</div>
+              <div class="field-val" id="mAddress" style="margin-top:0.25rem;">—</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;" id="mDistState">—</div>
+            </div>
+          </div>
+          <div id="mtab-academic" class="mtab-content" style="display:none;">
+            <h4 style="font-size:0.93rem;font-weight:800;margin-bottom:0.9rem;">🎓 Academic Status</h4>
+            <div class="info-fields-grid">
+              <div class="field-card"><div class="field-label">DEPARTMENT</div><div class="field-val">Computer Science &amp; Engineering</div></div>
+              <div class="field-card"><div class="field-label">CLASS / SECTION</div><div class="field-val">CSE-A (Batch 2025–2029)</div></div>
+              <div class="field-card"><div class="field-label">CURRENT SEMESTER</div><div class="field-val">Semester 2</div></div>
+              <div class="field-card"><div class="field-label">ATTENDANCE STATUS</div><div class="field-val" id="mAttnStatus">—</div></div>
+              <div class="field-card"><div class="field-label">CGPA STATUS</div><div class="field-val" id="mCgpaStatus">—</div></div>
+              <div class="field-card"><div class="field-label">INSTITUTION</div><div class="field-val">Hindusthan Institute of Technology</div></div>
+            </div>
+          </div>
+          <div id="mtab-overview" class="mtab-content" style="display:none;">
+            <p style="font-size:0.86rem;color:var(--text-muted);">Comprehensive summary of student academic journey, attendance logs, and verified institutional credentials.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       HOD DETAIL MODAL
+  ════════════════════════════════════ -->
+  <div class="modal-backdrop" id="hodDetailModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-top">
+        <div class="modal-top-title">⭐ HOD Profile</div>
+        <button class="modal-close-btn" onclick="closeModal('hodDetailModal')">×</button>
+      </div>
+      <div class="form-pad">
+        <div class="modal-body-layout" style="grid-template-columns:160px 1fr;">
+          <div class="m-left-col" style="padding-right:1rem;">
+            <div class="m-avatar-circle" id="hodAvatar" style="background:#059669;font-size:1.6rem;">HD</div>
+            <div class="m-student-name" id="hodName">—</div>
+            <span class="s-badge badge-hos">Head of Department</span>
+          </div>
+          <div class="info-fields-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="field-card"><div class="field-label">Faculty ID</div><div class="field-val" id="hodFid">—</div></div>
+            <div class="field-card"><div class="field-label">Department</div><div class="field-val" id="hodDept">—</div></div>
+            <div class="field-card"><div class="field-label">Mobile</div><div class="field-val" id="hodMobile">—</div></div>
+            <div class="field-card"><div class="field-label">Email</div><div class="field-val" id="hodEmail">—</div></div>
+            <div class="field-card"><div class="field-label">Designation</div><div class="field-val" id="hodDesig">—</div></div>
+            <div class="field-card"><div class="field-label">Qualification</div><div class="field-val" id="hodQual">—</div></div>
+            <div class="field-card" style="grid-column:1/-1;"><div class="field-label">Specialization</div><div class="field-val" id="hodSpec">—</div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:1rem;justify-content:flex-end;">
+          <a id="hodWaLink" href="#" target="_blank" class="btn btn-green">💬 WhatsApp</a>
+          <button class="btn" onclick="closeModal('hodDetailModal')">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       ADD STUDENT MODAL
+  ════════════════════════════════════ -->
+  <div class="modal-backdrop" id="addStudentModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-top">
+        <div class="modal-top-title">➕ Add New Student</div>
+        <button class="modal-close-btn" onclick="closeModal('addStudentModal')">×</button>
+      </div>
+      <form action="/admin/students/add" method="POST" class="form-pad">
+        <div class="form-row">
+          <div><label class="form-label">Register Number *</label><input type="text" name="reg_no" class="form-control" required placeholder="e.g. 720825103064"></div>
+          <div><label class="form-label">Student Name *</label><input type="text" name="name" class="form-control" required placeholder="Full Name"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Date of Birth</label><input type="date" name="dob" class="form-control"></div>
+          <div><label class="form-label">Gender</label><select name="gender" class="form-control"><option>Male</option><option>Female</option></select></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Attendance %</label><input type="number" step="0.1" name="attendance" class="form-control" value="85.0"></div>
+          <div><label class="form-label">CGPA</label><input type="number" step="0.01" name="cgpa" class="form-control" value="8.00"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Day Scholar / Hosteller</label><select name="day_hos" class="form-control"><option value="Day Scholar">Day Scholar</option><option value="Hosteller">Hosteller</option></select></div>
+          <div><label class="form-label">Blood Group</label><input type="text" name="blood_group" class="form-control" placeholder="e.g. B+"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">WhatsApp No.</label><input type="text" name="whatsapp" class="form-control" placeholder="10-digit"></div>
+          <div><label class="form-label">Father Mobile</label><input type="text" name="father_mob" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Father Name</label><input type="text" name="father" class="form-control"></div>
+          <div><label class="form-label">Mother Name</label><input type="text" name="mother" class="form-control"></div>
+        </div>
+        <div class="form-group-full"><label class="form-label">Address</label><input type="text" name="addr1" class="form-control" placeholder="Street, City"></div>
+        <div class="form-row">
+          <div><label class="form-label">District</label><input type="text" name="district" class="form-control" value="Coimbatore"></div>
+          <div><label class="form-label">PIN Code</label><input type="text" name="pincode" class="form-control"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+          <button type="button" class="btn" onclick="closeModal('addStudentModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       EDIT STUDENT MODAL
+  ════════════════════════════════════ -->
+  <div class="modal-backdrop" id="editStudentModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-top">
+        <div class="modal-top-title">✏ Edit Student Details</div>
+        <button class="modal-close-btn" onclick="closeModal('editStudentModal')">×</button>
+      </div>
+      <form id="editStudentForm" method="POST" class="form-pad">
+        <input type="hidden" id="editReg" name="reg_no">
+        <div class="form-row">
+          <div><label class="form-label">Student Name *</label><input type="text" id="editName" name="name" class="form-control" required></div>
+          <div><label class="form-label">Date of Birth</label><input type="date" id="editDob" name="dob" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Gender</label><select id="editGender" name="gender" class="form-control"><option>Male</option><option>Female</option></select></div>
+          <div><label class="form-label">Blood Group</label><input type="text" id="editBlood" name="blood_group" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Attendance %</label><input type="number" step="0.1" id="editAttn" name="attendance" class="form-control"></div>
+          <div><label class="form-label">CGPA</label><input type="number" step="0.01" id="editCgpa" name="cgpa" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Day Scholar / Hosteller</label><select id="editDayHos" name="day_hos" class="form-control"><option value="Day Scholar">Day Scholar</option><option value="Hosteller">Hosteller</option></select></div>
+          <div><label class="form-label">Community</label><input type="text" id="editCommunity" name="community" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">WhatsApp</label><input type="text" id="editWa" name="whatsapp" class="form-control"></div>
+          <div><label class="form-label">Father Mobile</label><input type="text" id="editFatherMob" name="father_mob" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Father Name</label><input type="text" id="editFather" name="father" class="form-control"></div>
+          <div><label class="form-label">Mother Name</label><input type="text" id="editMother" name="mother" class="form-control"></div>
+        </div>
+        <div class="form-group-full"><label class="form-label">Address</label><input type="text" id="editAddr" name="addr1" class="form-control"></div>
+        <div class="form-row">
+          <div><label class="form-label">District</label><input type="text" id="editDistrict" name="district" class="form-control"></div>
+          <div><label class="form-label">PIN Code</label><input type="text" id="editPincode" name="pincode" class="form-control"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+          <button type="button" class="btn" onclick="closeModal('editStudentModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       ADD FACULTY MODAL
+  ════════════════════════════════════ -->
+  <div class="modal-backdrop" id="addFacultyModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-top">
+        <div class="modal-top-title">➕ Add New Faculty</div>
+        <button class="modal-close-btn" onclick="closeModal('addFacultyModal')">×</button>
+      </div>
+      <form action="/admin/faculty/add" method="POST" class="form-pad">
+        <div class="form-row">
+          <div><label class="form-label">Full Name *</label><input type="text" name="name" class="form-control" required placeholder="Dr. / Mr. / Mrs."></div>
+          <div><label class="form-label">Institutional Email *</label><input type="email" name="email" class="form-control" required placeholder="name@hit.edu.in"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Mobile</label><input type="text" name="mobile" class="form-control" placeholder="10-digit"></div>
+          <div><label class="form-label">Department</label>
+            <select name="department" class="form-control">
+              <option>Computer Science &amp; Engineering</option>
+              <option>Electronics &amp; Communication Engineering</option>
+              <option>AI &amp; Data Science</option>
+              <option>Mechanical Engineering</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Designation</label><input type="text" name="designation" class="form-control" value="Assistant Professor"></div>
+          <div><label class="form-label">Qualification</label><input type="text" name="qualification" class="form-control" placeholder="B.E., M.E., Ph.D."></div>
+        </div>
+        <div class="form-group-full"><label class="form-label">Specialization</label><input type="text" name="specialization" class="form-control"></div>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+          <button type="button" class="btn" onclick="closeModal('addFacultyModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save Faculty</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       EDIT FACULTY MODAL
+  ════════════════════════════════════ -->
+  <div class="modal-backdrop" id="editFacultyModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-top">
+        <div class="modal-top-title">✏ Edit Faculty Details</div>
+        <button class="modal-close-btn" onclick="closeModal('editFacultyModal')">×</button>
+      </div>
+      <form id="editFacultyForm" method="POST" class="form-pad">
+        <div class="form-row">
+          <div><label class="form-label">Full Name *</label><input type="text" id="efName" name="name" class="form-control" required></div>
+          <div><label class="form-label">Email *</label><input type="email" id="efEmail" name="email" class="form-control" required></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Mobile</label><input type="text" id="efMobile" name="mobile" class="form-control"></div>
+          <div><label class="form-label">Designation</label><input type="text" id="efDesig" name="designation" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Department</label><input type="text" id="efDept" name="department" class="form-control"></div>
+          <div><label class="form-label">Qualification</label><input type="text" id="efQual" name="qualification" class="form-control"></div>
+        </div>
+        <div class="form-group-full"><label class="form-label">Specialization</label><input type="text" id="efSpec" name="specialization" class="form-control"></div>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+          <button type="button" class="btn" onclick="closeModal('editFacultyModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       ADD HOD MODAL
+  ════════════════════════════════════ -->
+  <div class="modal-backdrop" id="addHodModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-top">
+        <div class="modal-top-title">➕ Add New HOD</div>
+        <button class="modal-close-btn" onclick="closeModal('addHodModal')">×</button>
+      </div>
+      <form action="/admin/hod/add" method="POST" class="form-pad">
+        <div class="form-row">
+          <div><label class="form-label">Full Name *</label><input type="text" name="name" class="form-control" required></div>
+          <div><label class="form-label">Faculty ID *</label><input type="text" name="faculty_id" class="form-control" required placeholder="FAC005"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Email *</label><input type="email" name="email" class="form-control" required placeholder="name@hit.edu.in"></div>
+          <div><label class="form-label">Mobile</label><input type="text" name="mobile" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Department Name *</label><input type="text" name="department" class="form-control" required></div>
+          <div><label class="form-label">Dept Code *</label><input type="text" name="dept_code" class="form-control" required placeholder="CSE"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Designation</label><input type="text" name="designation" class="form-control" value="Professor &amp; HOD"></div>
+          <div><label class="form-label">Qualification</label><input type="text" name="qualification" class="form-control" value="M.E., Ph.D."></div>
+        </div>
+        <div class="form-group-full"><label class="form-label">Specialization</label><input type="text" name="specialization" class="form-control"></div>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+          <button type="button" class="btn" onclick="closeModal('addHodModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save HOD</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       EDIT HOD MODAL
+  ════════════════════════════════════ -->
+  <div class="modal-backdrop" id="editHodModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-top">
+        <div class="modal-top-title">✏ Edit HOD Details</div>
+        <button class="modal-close-btn" onclick="closeModal('editHodModal')">×</button>
+      </div>
+      <form id="editHodForm" method="POST" class="form-pad">
+        <div class="form-row">
+          <div><label class="form-label">Full Name *</label><input type="text" id="ehName" name="name" class="form-control" required></div>
+          <div><label class="form-label">Faculty ID</label><input type="text" id="ehFid" name="faculty_id" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Email</label><input type="email" id="ehEmail" name="email" class="form-control"></div>
+          <div><label class="form-label">Mobile</label><input type="text" id="ehMobile" name="mobile" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Department</label><input type="text" id="ehDept" name="department" class="form-control"></div>
+          <div><label class="form-label">Dept Code</label><input type="text" id="ehDeptCode" name="dept_code" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Designation</label><input type="text" id="ehDesig" name="designation" class="form-control"></div>
+          <div><label class="form-label">Qualification</label><input type="text" id="ehQual" name="qualification" class="form-control"></div>
+        </div>
+        <div class="form-group-full"><label class="form-label">Specialization</label><input type="text" id="ehSpec" name="specialization" class="form-control"></div>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+          <button type="button" class="btn" onclick="closeModal('editHodModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save HOD</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Bot -->
+  <div class="floating-bot" title="HIT Smart Assistant" onclick="alert('HIT Smart Academic Assistant — Ready!')">🤖</div>
+
+  <!-- ════════════════════════════════════════════
+       JAVASCRIPT
+  ════════════════════════════════════════════ -->
+  <script>
+    // ── Clock ──
+    function updateClock() {
+      const opts = { timeZone:'Asia/Kolkata', weekday:'short', month:'short', day:'2-digit', year:'numeric',
+                     hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true };
+      document.getElementById('liveClock').textContent = new Date().toLocaleString('en-US', opts);
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    // ── Theme ──
+    function toggleTheme(v) {
+      if (v==='dark') document.documentElement.setAttribute('data-theme','dark');
+      else document.documentElement.removeAttribute('data-theme');
+    }
+
+    // ── Tab navigation ──
+    function switchNav(tabId, e) {
+      document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      const tgt = document.getElementById(tabId);
+      if (tgt) tgt.classList.add('active');
+      if (e && e.target) {
+        // find the button that was clicked in the nav
+        const btn = e.target.closest('.nav-tab');
+        if (btn) btn.classList.add('active');
+      }
+    }
+
+    // ── Generic modal ──
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    // ── Modal subtabs ──
+    function switchModalTab(tab, btn) {
+      document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.mtab-content').forEach(c => c.style.display = 'none');
+      btn.classList.add('active');
+      const tgt = document.getElementById('mtab-'+tab);
+      if (tgt) tgt.style.display = 'block';
+    }
+
+    // ── Logout ──
+    function confirmLogout() {
+      if (confirm('Sign out from HIT Smart Academic Dashboard?')) window.location.href='/logout';
+    }
+
+    // ══════════════════════════════════════
+    // STUDENT FILTER — fixed with data attrs
+    // ══════════════════════════════════════
+    let activeChip = 'all';
+
+    function setChip(chip) {
+      activeChip = chip;
+      document.querySelectorAll('[id^="chip-"]').forEach(b => b.classList.remove('chip-active'));
+      const el = document.getElementById('chip-'+chip);
+      if (el) el.classList.add('chip-active');
+      filterStudents();
+    }
+
+    function filterStudents() {
+      const q    = (document.getElementById('studentSearch').value || '').toLowerCase().trim();
+      const dept = document.getElementById('deptFilter').value;
+      let visible = 0;
+
+      document.querySelectorAll('#studentsGrid .s-card').forEach(card => {
+        const name  = card.dataset.name  || '';
+        const reg   = card.dataset.reg   || '';
+        const type  = card.dataset.type  || '';
+        const deptD = card.dataset.dept  || 'CSE';
+        const attn  = parseFloat(card.dataset.attn) || 0;
+        const cgpa  = parseFloat(card.dataset.cgpa) || 0;
+
+        // Text search
+        const textOk = !q || name.includes(q) || reg.toLowerCase().includes(q);
+
+        // Department filter
+        const deptOk = (dept === 'all') || (deptD === dept);
+
+        // Category chip
+        let chipOk = true;
+        if (activeChip === 'hosteller')  chipOk = type.includes('hos');
+        else if (activeChip === 'dayscholar') chipOk = type.includes('day');
+        else if (activeChip === 'high_attn')  chipOk = attn >= 90;
+        else if (activeChip === 'low_attn')   chipOk = attn < 75;
+        else if (activeChip === 'high_cgpa')  chipOk = cgpa >= 8.0;
+
+        const show = textOk && deptOk && chipOk;
+        card.style.display = show ? 'flex' : 'none';
+        if (show) visible++;
+      });
+
+      const noMsg = document.getElementById('noStudentMsg');
+      if (noMsg) noMsg.style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    function exportCSV() { window.location.href = '/api/students?cat=all'; }
+
+    // ══════════════════════════════════════
+    // STUDENT DETAIL MODAL
+    // ══════════════════════════════════════
+    let rawAadhaar = ''; let aadhaarShown = false;
+
+    function openStudentModal(s) {
+      const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val||'—'; };
+      set('mReg', s.reg_no); set('mRegSub', s.reg_no); set('mName', s.name);
+      document.getElementById('mAvatar').textContent = s.name.substring(0,2).toUpperCase();
+      const typeEl = document.getElementById('mType');
+      const isHos = (s.day_hos||'').toLowerCase().includes('hos');
+      typeEl.textContent = (s.day_hos||'Day Scholar').toUpperCase();
+      typeEl.className = 's-badge ' + (isHos ? 'badge-hos' : 'badge-day');
+
+      const attn = parseFloat(s.attendance)||0;
+      const cgpa = parseFloat(s.cgpa)||0;
+      set('mAttn', attn + '%');
+      document.getElementById('mAttn').style.color = attn>=90?'#10b981':attn>=75?'#f59e0b':'#ef4444';
+      set('mCgpa', s.cgpa||'0.00');
+
+      set('mDob', s.dob); set('mGender', s.gender); set('mBlood', s.blood_group);
+      set('mComm', s.community); set('mQuota', s.quota); set('mRes', s.day_hos);
+      set('mFather', s.father); set('mFatherMob', s.father_mob);
+      set('mMother', s.mother); set('mMotherMob', s.mother_mob);
+      set('mWa', s.whatsapp); set('mPhone', s.personal_no);
+
+      const addr = [s.addr1,s.addr2,s.addr3,s.addr4,s.addr5].filter(Boolean).join(', ');
+      set('mAddress', addr || 'Not provided');
+      set('mDistState', (s.district||'')+(s.district&&s.state?', ':'')+( s.state||'')+(s.pincode?' – '+s.pincode:''));
+
+      set('mAttnStatus', attn>=90?'Excellent (≥90%)':attn>=75?'Satisfactory':'⚠ Shortage (<75%)');
+      set('mCgpaStatus', cgpa>=8?'Distinction':cgpa>=6?'Good Standing':'Needs Improvement');
+
+      rawAadhaar = s.aadhar||'000000000000'; aadhaarShown=false; renderAadhaar();
+
+      document.getElementById('mParentWa').href = `https://wa.me/91${s.father_mob||s.whatsapp||''}?text=Hello+from+HIT+CSE-A`;
+      document.getElementById('mRoute').href = `https://maps.google.com/?q=${encodeURIComponent([s.addr1,s.district,s.state].filter(Boolean).join(','))}`;
+
+      openModal('studentDetailModal');
+    }
+
+    function renderAadhaar() {
+      const masked = '••••••••' + rawAadhaar.slice(-4);
+      document.getElementById('mAadhaarMasked').textContent = aadhaarShown ? rawAadhaar : masked;
+      document.getElementById('mAadhaarFull').textContent   = aadhaarShown ? rawAadhaar : masked;
+      document.getElementById('mAadhaarBtn').textContent    = aadhaarShown ? '🙈 Hide' : '👁 Show';
+    }
+    function toggleAadhaar() { aadhaarShown=!aadhaarShown; renderAadhaar(); }
+
+    // ══════════════════════════════════════
+    // STUDENT EDIT MODAL
+    // ══════════════════════════════════════
+    function openEditStudentModal(s) {
+      const setV = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
+      setV('editReg',      s.reg_no);
+      setV('editName',     s.name);
+      setV('editDob',      s.dob);
+      setV('editGender',   s.gender||'Male');
+      setV('editBlood',    s.blood_group);
+      setV('editCommunity',s.community);
+      setV('editDayHos',   s.day_hos||'Day Scholar');
+      setV('editAttn',     s.attendance||0);
+      setV('editCgpa',     s.cgpa||0);
+      setV('editWa',       s.whatsapp);
+      setV('editFatherMob',s.father_mob);
+      setV('editFather',   s.father);
+      setV('editMother',   s.mother);
+      setV('editAddr',     s.addr1);
+      setV('editDistrict', s.district||'Coimbatore');
+      setV('editPincode',  s.pincode);
+      document.getElementById('editStudentForm').action = `/admin/students/edit/${encodeURIComponent(s.reg_no)}`;
+      openModal('editStudentModal');
+    }
+
+    function confirmDeleteStudent(reg, name) {
+      if (confirm(`Delete student:\n${name} (${reg})?\n\nThis cannot be undone.`)) {
+        const f = document.createElement('form');
+        f.method='POST'; f.action=`/admin/students/delete/${encodeURIComponent(reg)}`;
+        document.body.appendChild(f); f.submit();
+      }
+    }
+
+    // ══════════════════════════════════════
+    // FACULTY EDIT MODAL
+    // ══════════════════════════════════════
+    function openEditFacultyModal(p) {
+      const setV = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
+      setV('efName',   p.name);
+      setV('efEmail',  p.email);
+      setV('efMobile', p.mobile||'');
+      setV('efDesig',  p.designation||'Assistant Professor');
+      setV('efDept',   p.department||'CSE');
+      setV('efQual',   p.qualification||'');
+      setV('efSpec',   p.specialization||'');
+      document.getElementById('editFacultyForm').action = `/admin/faculty/edit/${p.id||0}`;
+      openModal('editFacultyModal');
+    }
+
+    function confirmDeleteFaculty(fid, name) {
+      if (confirm(`Delete faculty member:\n${name}?`)) {
+        const f = document.createElement('form');
+        f.method='POST'; f.action=`/admin/faculty/delete/${fid}`;
+        document.body.appendChild(f); f.submit();
+      }
+    }
+
+    // ══════════════════════════════════════
+    // HOD DETAIL / EDIT / DELETE
+    // ══════════════════════════════════════
+    function viewHodDetail(h) {
+      const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val||'—'; };
+      set('hodName',   h.name);
+      set('hodFid',    h.faculty_id);
+      set('hodDept',   h.dept_code + ' — ' + h.department);
+      set('hodMobile', h.mobile);
+      set('hodEmail',  h.email);
+      set('hodDesig',  h.designation||'Professor & HOD');
+      set('hodQual',   h.qualification||'M.E., Ph.D.');
+      set('hodSpec',   h.specialization);
+      document.getElementById('hodAvatar').textContent = h.name.substring(0,2).toUpperCase();
+      document.getElementById('hodWaLink').href = `https://wa.me/91${h.mobile}?text=Hello+Dr.+${encodeURIComponent(h.name)}`;
+      openModal('hodDetailModal');
+    }
+
+    function openEditHodModal(h) {
+      const setV = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
+      setV('ehName',     h.name);
+      setV('ehFid',      h.faculty_id);
+      setV('ehEmail',    h.email);
+      setV('ehMobile',   h.mobile);
+      setV('ehDept',     h.department);
+      setV('ehDeptCode', h.dept_code);
+      setV('ehDesig',    h.designation||'Professor & HOD');
+      setV('ehQual',     h.qualification||'M.E., Ph.D.');
+      setV('ehSpec',     h.specialization);
+      document.getElementById('editHodForm').action = `/admin/hod/edit/${h.id}`;
+      openModal('editHodModal');
+    }
+
+    function confirmDeleteHod(hid, name) {
+      if (confirm(`Delete HOD profile:\n${name}?`)) {
+        const f = document.createElement('form');
+        f.method='POST'; f.action=`/admin/hod/delete/${hid}`;
+        document.body.appendChild(f); f.submit();
+      }
+    }
+
+    // ══════════════════════════════════════
+    // TIMETABLE EDIT
+    // ══════════════════════════════════════
+    function saveTimetable() {
+      const inputs = document.querySelectorAll('.tt-input');
+      const changes = [];
+      inputs.forEach(inp => {
+        if (inp.value !== inp.dataset.orig) {
+          changes.push({ orig: inp.dataset.orig, new: inp.value });
+        }
+      });
+      if (changes.length === 0) { alert('No changes detected.'); return; }
+      alert(`${changes.length} cell(s) changed. Contact admin to persist server-side timetable.`);
+    }
+    function resetTimetable() {
+      document.querySelectorAll('.tt-input').forEach(inp => { inp.value = inp.dataset.orig; });
+    }
+
+    // ══════════════════════════════════════
+    // PROFILES SUBTABS
+    // ══════════════════════════════════════
+    function showProfileSubtab(tab, btn) {
+      document.querySelectorAll('[id^="profSub"]').forEach(el => el.style.display='none');
+      document.getElementById('profSub'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display='block';
+      document.querySelectorAll('[id^="profTab"]').forEach(b => {
+        b.classList.remove('btn-primary'); b.classList.add('btn');
+      });
+      btn.classList.add('btn-primary');
+    }
+
+    // ── Close modal on backdrop click ──
+    document.querySelectorAll('.modal-backdrop').forEach(bd => {
+      bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('open'); });
+    });
+  </script>
+
+</body>
+</html>

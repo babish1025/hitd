@@ -1,0 +1,81 @@
+# ── Environment & Secrets ── NEVER commit real credentials ──
+.env
+.env.*
+!.env.example
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual environments ──
+venv/
+.venv/
+env/
+ENV/
+
+# ── Database files ── (local SQLite — use Supabase in production)
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Uploaded files ──
+static/uploads/photos/*
+static/uploads/marksheets/*
+!static/uploads/photos/.gitkeep
+!static/uploads/marksheets/.gitkeep
+
+# ── IDE & OS ──
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──
+*.log
+tatus
+
+*.pyo
+*.pyc
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual environments ──
+venv/
+.venv/
+env/
+ENV/
+
+# ── Database files ── (local SQLite — use Supabase in production)
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Uploaded files ──
+static/uploads/photos/*
+static/uploads/marksheets/*
+!static/uploads/photos/.gitkeep
+!static/uploads/marksheets/.gitkeep
+
+# ── IDE & OS ──
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──
+*.log
+tatus

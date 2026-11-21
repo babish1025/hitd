@@ -1,28 +1,30 @@
-"""HIT CSE-A Batch Dashboard — Flask backend."""
-import os, sqlite3, datetime, urllib.parse
+"""HITECH — HIT Smart Academic Dashboard | Command & Intelligence System
+Flask backend supporting Admin, HOD, Faculty, and Student portals with Supabase PostgreSQL.
+"""
+import os, datetime, urllib.parse
 from functools import wraps
-from flask import Flask, request, session, redirect, url_for, render_template, jsonify, send_from_directory, flash
+from flask import Flask, request, session, redirect, url_for, render_template, jsonify, flash
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(BASE, "students.db")
+load_dotenv(os.path.join(BASE, ".env"))
+
+from database import Database
+
 UPLOAD_PHOTOS = os.path.join(BASE, "static", "uploads", "photos")
 UPLOAD_MARKS = os.path.join(BASE, "static", "uploads", "marksheets")
 os.makedirs(UPLOAD_PHOTOS, exist_ok=True)
 os.makedirs(UPLOAD_MARKS, exist_ok=True)
 
-PROFESSOR_PASSWORD = "HIT2026"
-PROF_EMAIL_DOMAIN = "@hit.edu.in"
+PROFESSOR_PASSWORD = os.getenv("PROFESSOR_PASSWORD", "HIT2026")
+ADMIN_PASSWORD     = os.getenv("ADMIN_PASSWORD")          # set in .env — no hardcoded fallback
+PROF_EMAIL_DOMAIN  = "@hit.edu.in"
 
 app = Flask(__name__)
-app.secret_key = "hit-cse-a-2025-secret"
+app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production")
 
-def db():
-    c = sqlite3.connect(DB)
-    c.row_factory = sqlite3.Row
-    return c
-
-# ---------- Timetable (from uploaded image) ----------
+# ---------- Timetable (from class timetable) ----------
 TIMETABLE = {
     "Monday":    ["24TP703","24TP703","24AD401","24CS401","24TP703","24TP703","24TP703"],
     "Tuesday":   ["24AD401","24AD401","24CS401","24CS401","24MA204","LIB","24CS401"],
@@ -46,174 +48,317 @@ SUBJECTS = {
 }
 
 # ---------- Auth helpers ----------
-def require(role):
+def require_any(roles):
     def deco(fn):
         @wraps(fn)
         def wrap(*a, **k):
-            if session.get("role") != role: return redirect(url_for("login"))
+            if session.get("role") not in roles:
+                return redirect(url_for("login"))
             return fn(*a, **k)
         return wrap
     return deco
 
-# ---------- Routes ----------
+# ---------- Public & Auth Routes ----------
 @app.route("/")
 def login():
-    if session.get("role") == "student": return redirect(url_for("student"))
-    if session.get("role") == "professor": return redirect(url_for("professor"))
+    role = session.get("role")
+    if role == "student":
+        return redirect(url_for("student"))
+    if role in ["admin", "hod", "faculty", "professor"]:
+        return redirect(url_for("admin_dashboard"))
     return render_template("login.html")
 
 @app.post("/login")
 def do_login():
-    role = request.form.get("role")
-    if role == "professor":
-        email = request.form.get("email","").strip().lower()
-        pwd = request.form.get("password","")
-        if not email.endswith(PROF_EMAIL_DOMAIN):
-            flash("Professor email must end with @hit.edu.in", "err"); return redirect(url_for("login"))
-        if pwd != PROFESSOR_PASSWORD:
-            flash("Invalid professor password.", "err"); return redirect(url_for("login"))
-        con = db()
-        prof = con.execute("SELECT * FROM professors WHERE email=?", (email,)).fetchone()
+    role = request.form.get("role", "admin").lower()
+    pwd = request.form.get("password", "")
+
+    if role == "admin":
+        user = request.form.get("email", "").strip()
+        if pwd in [ADMIN_PASSWORD, PROFESSOR_PASSWORD]:
+            session["role"] = "admin"
+            session["email"] = "admin@hit.edu.in"
+            session["name"] = "admin (ADMIN)"
+            return redirect(url_for("admin_dashboard"))
+        else:
+            flash("Invalid admin credentials.", "err")
+            return redirect(url_for("login"))
+
+    elif role in ["hod", "faculty", "professor"]:
+        email = request.form.get("email", "").strip().lower()
+        if not email.endswith(PROF_EMAIL_DOMAIN) and not email.startswith("admin"):
+            flash("Institutional email must end with @hit.edu.in", "err")
+            return redirect(url_for("login"))
+        if pwd != PROFESSOR_PASSWORD and pwd != ADMIN_PASSWORD:
+            flash(f"Invalid password for {role.upper()}.", "err")
+            return redirect(url_for("login"))
+        
+        prof = Database.get_professor_by_email(email)
         if not prof:
-            con.execute("INSERT INTO professors(email,name) VALUES(?,?)",(email, email.split("@")[0].title()))
-            con.commit()
-            prof = con.execute("SELECT * FROM professors WHERE email=?", (email,)).fetchone()
-        con.close()
-        session["role"]="professor"; session["email"]=email; session["name"]=prof["name"]
-        return redirect(url_for("professor"))
+            name = email.split("@")[0].title()
+            Database.insert_professor_if_not_exists(email, name)
+            prof = {"name": name, "email": email}
+
+        session["role"] = role
+        session["email"] = email
+        session["name"] = prof.get("name", "Faculty Member")
+        return redirect(url_for("admin_dashboard"))
+
     else:
-        reg = request.form.get("reg_no","").strip()
-        pwd = request.form.get("password","")
-        con = db(); s = con.execute("SELECT * FROM students WHERE reg_no=?", (reg,)).fetchone(); con.close()
-        if not s or s["password"] != pwd:
-            flash("Invalid Reg No or Password.", "err"); return redirect(url_for("login"))
-        session["role"]="student"; session["reg_no"]=reg; session["name"]=s["name"]
+        # Student Login
+        reg = request.form.get("reg_no", "").strip()
+        s = Database.get_student_by_reg(reg)
+        if not s or s.get("password") != pwd:
+            flash("Invalid Register Number or Password.", "err")
+            return redirect(url_for("login"))
+        session["role"] = "student"
+        session["reg_no"] = reg
+        session["name"] = s.get("name", "Student")
         return redirect(url_for("student"))
 
 @app.route("/forgot")
 def forgot():
-    role = request.args.get("role","student")
-    who = request.args.get("who","").strip()
-    con = db()
+    role = request.args.get("role", "student")
+    who = request.args.get("who", "").strip()
     if role == "student":
-        s = con.execute("SELECT * FROM students WHERE reg_no=?", (who,)).fetchone()
-        if not s or not s["whatsapp"]:
-            con.close(); flash("No WhatsApp number on record for that Reg No.", "err"); return redirect(url_for("login"))
-        msg = f"Hello {s['name']}, your HIT dashboard password is: {s['password']}"
+        s = Database.get_student_by_reg(who)
+        if not s or not s.get("whatsapp"):
+            flash("No WhatsApp number on record for that Register Number.", "err")
+            return redirect(url_for("login"))
+        msg = f"Hello {s['name']}, your HIT Smart Academic password is: {s['password']}"
         wa = f"https://wa.me/91{s['whatsapp']}?text={urllib.parse.quote(msg)}"
-        con.close(); return redirect(wa)
+        return redirect(wa)
     else:
-        con.close()
-        flash(f"Professor password is fixed: {PROFESSOR_PASSWORD}", "info")
+        flash(f"Staff password is fixed by institution: {PROFESSOR_PASSWORD}", "info")
         return redirect(url_for("login"))
 
 @app.route("/logout")
 def logout():
-    session.clear(); return redirect(url_for("login"))
+    session.clear()
+    return redirect(url_for("login"))
 
-# ---------- Professor ----------
+# ---------- Admin & Command Center ----------
+@app.route("/admin")
+@app.route("/admin/students")
+@app.route("/admin/college-location")
+@app.route("/admin/profiles")
 @app.route("/professor")
-@require("professor")
-def professor():
-    con = db()
-    students = [dict(r) for r in con.execute("SELECT * FROM students ORDER BY reg_no").fetchall()]
-    profs = [dict(r) for r in con.execute("SELECT * FROM professors").fetchall()]
-    marks = [dict(r) for r in con.execute("SELECT * FROM marksheets").fetchall()]
-    con.close()
+@require_any(["admin", "hod", "faculty", "professor"])
+def admin_dashboard():
+    students = Database.get_all_students(order_by="reg_no")
+    profs = Database.get_all_professors()
+    hods = Database.get_all_hods()
+    departments = Database.get_all_departments()
+    settings = Database.get_college_settings()
+    marks = Database.get_all_marksheets()
     stats = _stats(students)
     birthdays = _todays_birthdays(students)
-    return render_template("professor.html",
-        students=students, stats=stats, birthdays=birthdays,
+    
+    return render_template("admin_dashboard.html",
+        students=students, professors=profs, hods=hods, departments=departments,
+        settings=settings, marksheets=marks, stats=stats, birthdays=birthdays,
         timetable=TIMETABLE, periods=PERIODS, subjects=SUBJECTS,
-        professors=profs, marksheets=marks, me=session.get("name"))
+        user_role=session.get("role", "admin"), user_name=session.get("name", "Administrator"))
 
+@app.post("/admin/save_settings")
+@require_any(["admin", "hod"])
+def save_settings():
+    Database.update_college_settings(request.form)
+    flash("Institution coordinates and contact channels saved successfully.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+# ---------- Student CRUD (Faculty, HOD, Admin only) ----------
+@app.post("/admin/students/add")
+@require_any(["admin", "hod", "faculty", "professor"])
+def add_student():
+    data = dict(request.form)
+    reg = data.get("reg_no", "").strip()
+    if not reg:
+        flash("Register number is required.", "err")
+        return redirect(url_for("admin_dashboard"))
+    existing = Database.get_student_by_reg(reg)
+    if existing:
+        flash(f"Student with Register Number {reg} already exists.", "err")
+        return redirect(url_for("admin_dashboard"))
+    Database.add_student(data)
+    flash(f"Student {data.get('name')} ({reg}) added successfully.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+@app.post("/admin/students/edit/<reg_no>")
+@require_any(["admin", "hod", "faculty", "professor"])
+def edit_student(reg_no):
+    data = dict(request.form)
+    Database.update_student(reg_no, data)
+    flash(f"Student {reg_no} details updated successfully.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+@app.post("/admin/students/delete/<reg_no>")
+@require_any(["admin", "hod", "faculty", "professor"])
+def delete_student(reg_no):
+    Database.delete_student(reg_no)
+    flash(f"Student {reg_no} has been removed from the institutional database.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+# ---------- Faculty CRUD ----------
+@app.post("/admin/faculty/add")
+@require_any(["admin", "hod"])
+def add_faculty():
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip().lower()
+    if not name or not email:
+        flash("Faculty name and email are required.", "err")
+        return redirect(url_for("admin_dashboard"))
+    Database.add_faculty(name, email, extra=dict(request.form))
+    flash(f"Faculty {name} added.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+@app.post("/admin/faculty/edit/<int:fid>")
+@require_any(["admin", "hod"])
+def edit_faculty(fid):
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip().lower()
+    Database.update_faculty(fid, name, email, extra=dict(request.form))
+    flash("Faculty updated.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+@app.post("/admin/faculty/delete/<int:fid>")
+@require_any(["admin", "hod"])
+def delete_faculty(fid):
+    Database.delete_faculty(fid)
+    flash("Faculty member removed.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+# ---------- HOD CRUD ----------
+@app.post("/admin/hod/add")
+@require_any(["admin"])
+def add_hod():
+    Database.add_hod(dict(request.form))
+    flash("New HOD profile created.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+@app.post("/admin/hod/edit/<int:hid>")
+@require_any(["admin"])
+def edit_hod(hid):
+    Database.update_hod(hid, dict(request.form))
+    flash("HOD profile updated.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+@app.post("/admin/hod/delete/<int:hid>")
+@require_any(["admin"])
+def delete_hod(hid):
+    Database.delete_hod(hid)
+    flash("HOD profile deleted.", "info")
+    return redirect(url_for("admin_dashboard"))
+
+# ---------- Photo & Marksheet Uploads ----------
 @app.post("/professor/upload_photo/<reg_no>")
-@require("professor")
+@require_any(["admin", "hod", "faculty", "professor"])
 def upload_photo(reg_no):
     f = request.files.get("photo")
-    if not f: flash("No file.", "err"); return redirect(url_for("professor"))
+    if not f or not f.filename:
+        flash("No file selected.", "err")
+        return redirect(url_for("admin_dashboard"))
     fn = secure_filename(f"{reg_no}_{f.filename}")
     f.save(os.path.join(UPLOAD_PHOTOS, fn))
-    con = db(); con.execute("UPDATE students SET photo=? WHERE reg_no=?", (fn, reg_no)); con.commit(); con.close()
-    flash("Photo uploaded.", "info"); return redirect(url_for("professor"))
+    Database.update_student_photo(reg_no, fn)
+    flash("Student photo updated canonical sync.", "info")
+    return redirect(url_for("admin_dashboard"))
 
 @app.post("/professor/upload_marksheet/<reg_no>/<int:sem>")
-@require("professor")
+@require_any(["admin", "hod", "faculty", "professor"])
 def upload_marksheet(reg_no, sem):
-    if sem < 1 or sem > 8: flash("Semester 1-8 only.", "err"); return redirect(url_for("professor"))
+    if sem < 1 or sem > 8:
+        flash("Semester 1-8 only.", "err")
+        return redirect(url_for("admin_dashboard"))
     f = request.files.get("marksheet")
-    if not f: flash("No file.", "err"); return redirect(url_for("professor"))
+    if not f or not f.filename:
+        flash("No marksheet file selected.", "err")
+        return redirect(url_for("admin_dashboard"))
     fn = secure_filename(f"{reg_no}_sem{sem}_{f.filename}")
     f.save(os.path.join(UPLOAD_MARKS, fn))
-    con = db()
-    con.execute("INSERT OR REPLACE INTO marksheets(reg_no,semester,filename,uploaded_at) VALUES(?,?,?,?)",
-                (reg_no, sem, fn, datetime.datetime.now().isoformat()))
-    con.commit(); con.close()
-    flash(f"Semester {sem} marksheet uploaded.", "info"); return redirect(url_for("professor"))
+    uploaded_at = datetime.datetime.now().isoformat()
+    Database.save_marksheet(reg_no, sem, fn, uploaded_at)
+    flash(f"Semester {sem} marksheet uploaded.", "info")
+    return redirect(url_for("admin_dashboard"))
 
-@app.post("/professor/upload_prof_photo")
-@require("professor")
-def upload_prof_photo():
-    f = request.files.get("photo")
-    if not f: return redirect(url_for("professor"))
-    fn = secure_filename(f"prof_{session['email']}_{f.filename}")
-    f.save(os.path.join(UPLOAD_PHOTOS, fn))
-    con = db(); con.execute("UPDATE professors SET photo=? WHERE email=?", (fn, session["email"])); con.commit(); con.close()
-    return redirect(url_for("professor"))
-
-# ---------- Student ----------
+# ---------- Student Portal ----------
 @app.route("/student")
-@require("student")
+@require_any(["student"])
 def student():
-    reg = session["reg_no"]
-    con = db()
-    s = dict(con.execute("SELECT * FROM students WHERE reg_no=?", (reg,)).fetchone())
-    marks = [dict(r) for r in con.execute("SELECT * FROM marksheets WHERE reg_no=? ORDER BY semester", (reg,)).fetchall()]
-    profs = {p["email"]: dict(p) for p in con.execute("SELECT * FROM professors").fetchall()}
-    con.close()
+    reg = session.get("reg_no")
+    s = Database.get_student_by_reg(reg)
+    if not s:
+        flash("Student record not found.", "err")
+        return redirect(url_for("logout"))
+    marks = Database.get_student_marksheets(reg)
+    profs_list = Database.get_all_professors()
+    profs = {p["email"]: p for p in profs_list}
     return render_template("student.html", s=s, marksheets=marks,
         timetable=TIMETABLE, periods=PERIODS, subjects=SUBJECTS, professors=profs)
 
-# ---------- API for filters ----------
+# ---------- APIs ----------
 @app.get("/api/students")
-@require("professor")
+@require_any(["admin", "hod", "faculty", "professor"])
 def api_students():
-    cat = request.args.get("cat","all")
-    con = db()
-    rows = [dict(r) for r in con.execute("SELECT * FROM students").fetchall()]
-    con.close()
-    if cat == "high_cgpa": rows.sort(key=lambda x:-x["cgpa"])
-    elif cat == "low_cgpa": rows.sort(key=lambda x:x["cgpa"])
-    elif cat == "high_attn": rows = [r for r in rows if r["attendance"]>=90]; rows.sort(key=lambda x:-x["attendance"])
-    elif cat == "low_attn": rows = [r for r in rows if r["attendance"]<75]; rows.sort(key=lambda x:x["attendance"])
-    elif cat == "hosteller": rows = [r for r in rows if "HOS" in (r["day_hos"] or "").upper()]
-    elif cat == "dayscholar": rows = [r for r in rows if "DAY" in (r["day_hos"] or "").upper()]
+    cat = request.args.get("cat", "all")
+    rows = Database.get_all_students()
+
+    def get_cgpa(x):
+        try: return float(x.get("cgpa") or 0.0)
+        except: return 0.0
+    def get_attn(x):
+        try: return float(x.get("attendance") or 0.0)
+        except: return 0.0
+
+    if cat == "high_cgpa":
+        rows.sort(key=lambda x: -get_cgpa(x))
+    elif cat == "low_cgpa":
+        rows.sort(key=lambda x: get_cgpa(x))
+    elif cat == "high_attn":
+        rows = [r for r in rows if get_attn(r) >= 90]
+        rows.sort(key=lambda x: -get_attn(x))
+    elif cat == "low_attn":
+        rows = [r for r in rows if get_attn(r) < 75]
+        rows.sort(key=lambda x: get_attn(x))
+    elif cat == "hosteller":
+        rows = [r for r in rows if "HOS" in (r.get("day_hos") or "").upper()]
+    elif cat == "dayscholar":
+        rows = [r for r in rows if "DAY" in (r.get("day_hos") or "").upper()]
     return jsonify(rows)
 
 # ---------- Helpers ----------
 def _stats(students):
     n = len(students)
-    if not n: return {"total":0,"avg_attn":0,"avg_cgpa":0,"shortage":0}
-    avg_attn = round(sum(s["attendance"] for s in students)/n, 1)
-    avg_cgpa = round(sum(s["cgpa"] for s in students)/n, 2)
-    shortage = sum(1 for s in students if s["attendance"] < 75)
-    return {"total":n,"avg_attn":avg_attn,"avg_cgpa":avg_cgpa,"shortage":shortage}
+    if not n:
+        return {"total": 0, "avg_attn": 0, "avg_cgpa": 0, "shortage": 0}
+    def get_attn(s):
+        try: return float(s.get("attendance") or 0.0)
+        except: return 0.0
+    def get_cgpa(s):
+        try: return float(s.get("cgpa") or 0.0)
+        except: return 0.0
+    avg_attn = round(sum(get_attn(s) for s in students) / n, 1)
+    avg_cgpa = round(sum(get_cgpa(s) for s in students) / n, 2)
+    shortage = sum(1 for s in students if get_attn(s) < 75)
+    return {"total": n, "avg_attn": avg_attn, "avg_cgpa": avg_cgpa, "shortage": shortage}
 
 def _todays_birthdays(students):
     today = datetime.date.today()
     out = []
     for s in students:
-        if not s.get("dob"): continue
+        dob = s.get("dob")
+        if not dob:
+            continue
         try:
-            d = datetime.datetime.strptime(s["dob"],"%Y-%m-%d").date()
+            d = datetime.datetime.strptime(str(dob)[:10], "%Y-%m-%d").date()
             if d.month == today.month and d.day == today.day:
-                msg = f"Wishing {s['name']} a very happy birthday from HIT CSE-A! May you have a wonderful year ahead."
-                s = dict(s); s["wa_link"] = f"https://wa.me/91{s['whatsapp']}?text={urllib.parse.quote(msg)}"
-                out.append(s)
-        except: pass
+                msg = f"Wishing {s['name']} a very happy birthday from HIT Smart Academic! May you have an inspiring year ahead."
+                s_copy = dict(s)
+                s_copy["wa_link"] = f"https://wa.me/91{s.get('whatsapp')}?text={urllib.parse.quote(msg)}"
+                out.append(s_copy)
+        except:
+            pass
     return out
 
 if __name__ == "__main__":
-    if not os.path.exists(DB):
-        import seed; seed.main()
     app.run(debug=False, use_reloader=False, host="0.0.0.0", port=5000)

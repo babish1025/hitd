@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIT CSE-A — Faculty Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --header-bg: rgba(15, 23, 42, 0.9);
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --input-bg: rgba(15, 23, 42, 0.7);
+      --badge-green: #10b981;
+      --badge-yellow: #f59e0b;
+      --badge-red: #ef4444;
+    }
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.08);
+      --header-bg: rgba(255, 255, 255, 0.95);
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: rgba(0, 0, 0, 0.1);
+      --input-bg: #f1f5f9;
+    }
+    [data-theme="royal"] {
+      --bg: #1e1b4b;
+      --card-bg: #312e81;
+      --card-border: rgba(255, 255, 255, 0.1);
+      --header-bg: rgba(30, 27, 75, 0.9);
+      --accent: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --text: #f5f3ff;
+      --text-muted: #c4b5fd;
+      --border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(30, 27, 75, 0.7);
+    }
+    [data-theme="emerald"] {
+      --bg: #064e3b;
+      --card-bg: #065f46;
+      --card-border: rgba(255, 255, 255, 0.1);
+      --header-bg: rgba(6, 78, 59, 0.9);
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --text: #ecfdf5;
+      --text-muted: #a7f3d0;
+      --border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(2, 44, 34, 0.7);
+    }
+    [data-theme="sunset"] {
+      --bg: #431407;
+      --card-bg: #7c2d12;
+      --card-border: rgba(255, 255, 255, 0.1);
+      --header-bg: rgba(67, 20, 7, 0.9);
+      --accent: #f97316;
+      --accent-hover: #ea580c;
+      --text: #fff7ed;
+      --text-muted: #fed7aa;
+      --border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(67, 20, 7, 0.7);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .live-clock-box {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .theme-picker {
+      display: flex;
+      gap: 0.35rem;
+      background: var(--input-bg);
+      padding: 0.3rem 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+    }
+    .theme-btn {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-outline { background: transparent; border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { background: rgba(255, 255, 255, 0.05); }
+    .btn-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+    .btn-danger:hover { background: #ef4444; color: white; }
+
+    /* Main Container */
+    main {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      flex: 1;
+    }
+
+    /* Flash alerts */
+    .flash-alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-bottom: 1.25rem;
+    }
+    .flash-alert.info { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .flash-alert.err { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* Birthday Banner */
+    .birthday-banner {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(168, 85, 247, 0.15));
+      border: 1px solid rgba(236, 72, 153, 0.3);
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .bday-title { font-weight: 700; color: #f472b6; font-size: 1.05rem; }
+
+    /* Stats Row */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 1.25rem;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .stat-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-val { font-size: 1.85rem; font-weight: 800; margin-top: 0.3rem; }
+
+    /* Filter Toolbar */
+    .toolbar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 1rem;
+      border-radius: 14px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .pill {
+      padding: 0.4rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pill:hover, .pill.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .search-box {
+      min-width: 280px;
+      flex: 1;
+      max-width: 360px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--accent); }
+
+    /* Students Table */
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    th {
+      background: rgba(0, 0, 0, 0.1);
+      padding: 0.85rem 1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .student-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
+    }
+    .student-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .student-name { font-weight: 600; }
+    .student-reg { font-size: 0.75rem; color: var(--text-muted); }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: var(--badge-green); }
+    .badge-yellow { background: rgba(245, 158, 11, 0.15); color: var(--badge-yellow); }
+    .badge-red { background: rgba(239, 68, 68, 0.15); color: var(--badge-red); }
+    .badge-pill { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
+
+    /* Modals */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 650px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.75rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .detail-item {
+      background: var(--input-bg);
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .detail-k { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+    .detail-v { font-size: 0.9rem; font-weight: 600; margin-top: 0.2rem; word-break: break-word; }
+
+    /* Timetable Grid */
+    .tt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-top: 1rem;
+    }
+    .tt-table th, .tt-table td {
+      border: 1px solid var(--border);
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .tt-cell {
+      padding: 0.35rem;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--accent);
+      transition: all 0.2s;
+    }
+    .tt-cell:hover { background: var(--accent); color: white; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .detail-grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; }
+      .header-actions { width: 100%; justify-content: space-between; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-brand">
+      <img src="/static/images/logo.png" alt="Hindusthan Logo" style="width:42px; height:42px; object-fit:contain; border-radius:8px; background:#fff; padding:2px; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+      <div>
+        <div class="brand-title">Hindusthan • CSE-A Faculty Portal</div>
+        <div class="brand-sub">Hindusthan Institute of Technology • Batch 2025–2029</div>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="live-clock-box">
+        <span>🕒</span>
+        <span id="liveClock">Loading clock...</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="openTimetableModal()">📅 Today's Timetable</button>
+      <button class="btn btn-outline" onclick="openProfPhotoModal()">👤 Faculty Photo</button>
+      
+      <div class="theme-picker">
+        <button class="theme-btn" style="background:#0f172a;" onclick="setTheme('dark')"></button>
+        <button class="theme-btn" style="background:#f8fafc;" onclick="setTheme('light')"></button>
+        <button class="theme-btn" style="background:#6366f1;" onclick="setTheme('royal')"></button>
+        <button class="theme-btn" style="background:#10b981;" onclick="setTheme('emerald')"></button>
+        <button class="theme-btn" style="background:#f97316;" onclick="setTheme('sunset')"></button>
+      </div>
+
+      <a href="/logout" class="btn btn-danger">Logout</a>
+    </div>
+  </header>
+
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flash-alert {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Birthday Alert -->
+    {% if birthdays %}
+      <div class="birthday-banner">
+        <div>
+          <div class="bday-title">🎉 Today's Student Birthday Celebration!</div>
+          <div style="font-size: 0.88rem; margin-top: 0.3rem;">
+            {% for b in birthdays %}
+              <strong>{{ b.name }}</strong> ({{ b.reg_no }}){% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          {% for b in birthdays %}
+            <a href="{{ b.wa_link }}" target="_blank" class="btn btn-primary" style="background:#10b981; border:none;">
+              💬 Wish {{ b.name.split()[0] }} via WhatsApp
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Enrolled</div>
+        <div class="stat-val" style="color:var(--accent);">{{ stats.total }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Average Attendance</div>
+        <div class="stat-val" style="color:var(--badge-green);">{{ stats.avg_attn }}%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Average CGPA</div>
+        <div class="stat-val" style="color:#a855f7;">{{ stats.avg_cgpa }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Shortage Attendance (&lt;75%)</div>
+        <div class="stat-val" style="color:var(--badge-red);">{{ stats.shortage }}</div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="toolbar">
+      <div class="filter-pills">
+        <button class="pill active" onclick="filterCat('all', this)">All Students ({{ stats.total }})</button>
+        <button class="pill" onclick="filterCat('hosteller', this)">Hostellers</button>
+        <button class="pill" onclick="filterCat('dayscholar', this)">Day Scholars</button>
+        <button class="pill" onclick="filterCat('high_attn', this)">High Attn (≥90%)</button>
+        <button class="pill" onclick="filterCat('low_attn', this)">Shortage (&lt;75%)</button>
+        <button class="pill" onclick="filterCat('high_cgpa', this)">Top CGPA</button>
+        <button class="pill" onclick="filterCat('low_cgpa', this)">Low CGPA</button>
+      </div>
+
+      <div class="search-box">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search by name or Reg No..." onkeyup="searchStudents()">
+      </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="table-card">
+      <div class="table-wrap">
+        <table id="studentsTable">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Status</th>
+              <th>Attendance</th>
+              <th>CGPA</th>
+              <th>Contact</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentsBody">
+            {% for s in students %}
+              <tr class="student-row" data-name="{{ s.name.lower() }}" data-reg="{{ s.reg_no }}">
+                <td>
+                  <div class="student-cell">
+                    <img src="{% if s.photo %}/static/uploads/photos/{{ s.photo }}{% else %}https://ui-avatars.com/api/?name={{ s.name }}&background=3b82f6&color=fff{% endif %}" alt="{{ s.name }}" class="student-avatar">
+                    <div>
+                      <div class="student-name">{{ s.name }}</div>
+                      <div class="student-reg">{{ s.reg_no }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-pill">{{ s.day_hos or 'N/A' }}</span>
+                  {% if s.quota %}<span class="badge badge-pill" style="font-size:0.7rem;">{{ s.quota }}</span>{% endif %}
+                </td>
+                <td>
+                  {% if s.attendance >= 90 %}
+                    <span class="badge badge-green">{{ s.attendance }}%</span>
+                  {% elif s.attendance >= 75 %}
+                    <span class="badge badge-yellow">{{ s.attendance }}%</span>
+                  {% else %}
+                    <span class="badge badge-red">{{ s.attendance }}%</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <strong>{{ s.cgpa or '0.00' }}</strong>
+                </td>
+                <td>
+                  {% if s.whatsapp %}
+                    <a href="https://wa.me/91{{ s.whatsapp }}" target="_blank" style="color:var(--badge-green); text-decoration:none; font-weight:600; font-size:0.8rem;">
+                      💬 {{ s.whatsapp }}
+                    </a>
+                  {% else %}
+                    <span style="color:var(--text-muted);">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="display:flex; gap:0.4rem;">
+                    <button class="btn btn-outline" style="padding:0.35rem 0.6rem; font-size:0.78rem;" onclick='openDetailModal({{ s | tojson | safe }})'>Details</button>
+                    <button class="btn btn-outline" style="padding:0.35rem 0.6rem; font-size:0.78rem;" onclick="openPhotoModal('{{ s.reg_no }}', '{{ s.name }}')">Photo</button>
+                    <button class="btn btn-primary" style="padding:0.35rem 0.6rem; font-size:0.78rem;" onclick="openMarksModal('{{ s.reg_no }}', '{{ s.name }}')">Marksheets</button>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal: Student Full Details -->
+  <div class="modal-backdrop" id="detailModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalStudentName" style="font-weight:700;">Student Profile</h3>
+        <button class="modal-close" onclick="closeModal('detailModal')">&times;</button>
+      </div>
+      <div class="detail-grid" id="detailGridContent"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Photo Upload -->
+  <div class="modal-backdrop" id="photoModal">
+    <div class="modal" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 style="font-weight:700;">Upload Student Photo</h3>
+        <button class="modal-close" onclick="closeModal('photoModal')">&times;</button>
+      </div>
+      <form id="photoForm" method="POST" enctype="multipart/form-data">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;" id="photoStudentDesc"></p>
+        <div style="margin-bottom:1.25rem;">
+          <input type="file" name="photo" accept="image/*" class="search-input" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Upload Photo</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Marksheet Upload -->
+  <div class="modal-backdrop" id="marksModal">
+    <div class="modal" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 style="font-weight:700;">Upload Semester Marksheet</h3>
+        <button class="modal-close" onclick="closeModal('marksModal')">&times;</button>
+      </div>
+      <form id="marksForm" method="POST" enctype="multipart/form-data" onsubmit="handleMarksUpload(event)">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;" id="marksStudentDesc"></p>
+        <div style="margin-bottom:1rem;">
+          <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:0.3rem;">Select Semester</label>
+          <select id="marksSem" class="search-input" required>
+            {% for sem in range(1, 9) %}
+              <option value="{{ sem }}">Semester {{ sem }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="margin-bottom:1.25rem;">
+          <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:0.3rem;">Marksheet File (PDF / Image)</label>
+          <input type="file" name="marksheet" id="marksFile" accept=".pdf,image/*" class="search-input" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Upload Marksheet</button>
+      </form>
+
+      <div style="margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1rem;">
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.6rem;">Uploaded Marksheets on Record</h4>
+        <div id="studentMarksList" style="font-size:0.85rem; color:var(--text-muted);">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Professor Own Photo Upload -->
+  <div class="modal-backdrop" id="profPhotoModal">
+    <div class="modal" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 style="font-weight:700;">Upload Faculty Photo</h3>
+        <button class="modal-close" onclick="closeModal('profPhotoModal')">&times;</button>
+      </div>
+      <form action="/professor/upload_prof_photo" method="POST" enctype="multipart/form-data">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Upload your faculty portrait. It will be displayed in the timetable and subject directory.</p>
+        <div style="margin-bottom:1.25rem;">
+          <input type="file" name="photo" accept="image/*" class="search-input" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Save Photo</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Timetable -->
+  <div class="modal-backdrop" id="ttModal">
+    <div class="modal" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 style="font-weight:700;">CSE-A Class Timetable</h3>
+        <button class="modal-close" onclick="closeModal('ttModal')">&times;</button>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Click on any subject code to view faculty details, weekly hours, and course info.</p>
+      
+      <table class="tt-table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            {% for p in periods %}
+              <th>{{ p }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for day, subjs in timetable.items() %}
+            <tr>
+              <td style="font-weight:700;">{{ day }}</td>
+              {% for s in subjs %}
+                <td>
+                  <div class="tt-cell" onclick="showSubjectInfo('{{ s }}')">{{ s }}</div>
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal: Subject Details -->
+  <div class="modal-backdrop" id="subjModal">
+    <div class="modal" style="max-width: 460px;">
+      <div class="modal-header">
+        <h3 id="subjTitle" style="font-weight:700;">Course Information</h3>
+        <button class="modal-close" onclick="closeModal('subjModal')">&times;</button>
+      </div>
+      <div id="subjContent" style="display:flex; flex-direction:column; gap:0.85rem;"></div>
+    </div>
+  </div>
+
+  <script>
+    // Theme support
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('hit_theme', theme);
+    }
+    const savedTheme = localStorage.getItem('hit_theme') || 'dark';
+    setTheme(savedTheme);
+
+    // Live Clock (Asia/Kolkata)
+    function updateClock() {
+      const options = {
+        timeZone: 'Asia/Kolkata',
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      };
+      const now = new Date();
+      document.getElementById('liveClock').textContent = now.toLocaleString('en-IN', options);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Data maps
+    const allMarks = {{ marksheets | tojson | safe }};
+    const subjectsMap = {{ subjects | tojson | safe }};
+    const professorsMap = {
+      {% for p in professors %}
+        "{{ p.email }}": {{ p | tojson | safe }}{% if not loop.last %},{% endif %}
+      {% endfor %}
+    };
+
+    // Modal helpers
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function openTimetableModal() { openModal('ttModal'); }
+    function openProfPhotoModal() { openModal('profPhotoModal'); }
+
+    function openPhotoModal(reg, name) {
+      document.getElementById('photoStudentDesc').textContent = `Upload profile photo for ${name} (${reg})`;
+      document.getElementById('photoForm').action = `/professor/upload_photo/${reg}`;
+      openModal('photoModal');
+    }
+
+    let currentMarksReg = '';
+    function openMarksModal(reg, name) {
+      currentMarksReg = reg;
+      document.getElementById('marksStudentDesc').textContent = `Upload semester marksheets for ${name} (${reg})`;
+      
+      const listEl = document.getElementById('studentMarksList');
+      const studentMarks = allMarks.filter(m => String(m.reg_no) === String(reg));
+      if (!studentMarks.length) {
+        listEl.innerHTML = '<em>No marksheets uploaded yet for this student.</em>';
+      } else {
+        listEl.innerHTML = studentMarks.map(m => `
+          <div style="padding:0.4rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <span>Semester ${m.semester}</span>
+            <a href="/static/uploads/marksheets/${m.filename}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:600;">Download / View</a>
+          </div>
+        `).join('');
+      }
+      openModal('marksModal');
+    }
+
+    function handleMarksUpload(e) {
+      e.preventDefault();
+      const sem = document.getElementById('marksSem').value;
+      const form = document.getElementById('marksForm');
+      form.action = `/professor/upload_marksheet/${currentMarksReg}/${sem}`;
+      form.submit();
+    }
+
+    function openDetailModal(s) {
+      document.getElementById('modalStudentName').textContent = `${s.name} (${s.reg_no})`;
+      const grid = document.getElementById('detailGridContent');
+      
+      const fields = [
+        ['Register Number', s.reg_no],
+        ['Student Name', s.name],
+        ['Date of Birth', s.dob || '-'],
+        ['Gender', s.gender || '-'],
+        ['Aadhar Number', s.aadhar || '-'],
+        ['Attendance', (s.attendance || 0) + '%'],
+        ['CGPA', s.cgpa || '0.00'],
+        ['Day / Hosteller', s.day_hos || '-'],
+        ['Blood Group', s.blood_group || '-'],
+        ['Quota', s.quota || '-'],
+        ['Community', s.community || '-'],
+        ['WhatsApp Number', s.whatsapp || '-'],
+        ['Personal Phone', s.personal_no || '-'],
+        ['Father Name', s.father || '-'],
+        ['Father Contact', s.father_mob || '-'],
+        ['Mother Name', s.mother || '-'],
+        ['Mother Contact', s.mother_mob || '-'],
+        ['Address', [s.addr1, s.addr2, s.addr3, s.addr4, s.addr5].filter(Boolean).join(', ') || '-'],
+        ['District & State', `${s.district || ''}, ${s.state || ''}`.replace(/^,\s*|,\s*$/g, '') || '-'],
+        ['Pincode', s.pincode || '-'],
+        ['Default Password', s.password || '-']
+      ];
+
+      grid.innerHTML = fields.map(([k, v]) => `
+        <div class="detail-item">
+          <div class="detail-k">${k}</div>
+          <div class="detail-v">${v}</div>
+        </div>
+      `).join('');
+      openModal('detailModal');
+    }
+
+    function showSubjectInfo(code) {
+      const sub = subjectsMap[code];
+      const title = document.getElementById('subjTitle');
+      const content = document.getElementById('subjContent');
+      if (!sub) {
+        title.textContent = code;
+        content.innerHTML = `<p style="color:var(--text-muted);">General slot / No detailed course mapping.</p>`;
+      } else {
+        title.textContent = `${code} — ${sub.name}`;
+        const prof = professorsMap[sub.email] || {};
+        const profPhoto = prof.photo ? `/static/uploads/photos/${prof.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(sub.faculty)}&background=8b5cf6&color=fff`;
+
+        content.innerHTML = `
+          <div style="display:flex; align-items:center; gap:0.9rem; background:var(--input-bg); padding:0.75rem; border-radius:10px; border:1px solid var(--border);">
+            <img src="${profPhoto}" style="width:48px; height:48px; border-radius:50%; object-fit:cover;">
+            <div>
+              <div style="font-weight:700;">${sub.faculty}</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">${sub.email}</div>
+            </div>
+          </div>
+          <div class="detail-item"><div class="detail-k">Category</div><div class="detail-v">${sub.kind}</div></div>
+          <div class="detail-item"><div class="detail-k">Weekly Hours</div><div class="detail-v">${sub.hours} Hours / Week</div></div>
+        `;
+      }
+      openModal('subjModal');
+    }
+
+    // Live search filter
+    function searchStudents() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      document.querySelectorAll('.student-row').forEach(row => {
+        const name = row.getAttribute('data-name');
+        const reg = row.getAttribute('data-reg');
+        if (!q || name.includes(q) || reg.includes(q)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // Category filter using /api/students
+    async function filterCat(cat, btn) {
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+
+      try {
+        const res = await fetch(`/api/students?cat=${cat}`);
+        const list = await res.json();
+        const tbody = document.getElementById('studentsBody');
+        tbody.innerHTML = list.map(s => {
+          const attnBadge = s.attendance >= 90 ? `<span class="badge badge-green">${s.attendance}%</span>` :
+                            s.attendance >= 75 ? `<span class="badge badge-yellow">${s.attendance}%</span>` :
+                            `<span class="badge badge-red">${s.attendance}%</span>`;
+          const avatar = s.photo ? `/static/uploads/photos/${s.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=3b82f6&color=fff`;
+          const sJson = JSON.stringify(s).replace(/"/g, '&quot;');
+          return `
+            <tr class="student-row" data-name="${s.name.toLowerCase()}" data-reg="${s.reg_no}">
+              <td>
+                <div class="student-cell">
+                  <img src="${avatar}" alt="${s.name}" class="student-avatar">
+                  <div>
+                    <div class="student-name">${s.name}</div>
+                    <div class="student-reg">${s.reg_no}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge badge-pill">${s.day_hos || 'N/A'}</span>
+                ${s.quota ? `<span class="badge badge-pill" style="font-size:0.7rem;">${s.quota}</span>` : ''}
+              </td>
+              <td>${attnBadge}</td>
+              <td><strong>${s.cgpa || '0.00'}</strong></td>
+              <td>
+                ${s.whatsapp ? `<a href="https://wa.me/91${s.whatsapp}" target="_blank" style="color:var(--badge-green); text-decoration:none; font-weight:600; font-size:0.8rem;">💬 ${s.whatsapp}</a>` : '<span style="color:var(--text-muted);">-</span>'}
+              </td>
+              <td>
+                <div style="display:flex; gap:0.4rem;">
+                  <button class="btn btn-outline" style="padding:0.35rem 0.6rem; font-size:0.78rem;" onclick='openDetailModal(${sJson})'>Details</button>
+                  <button class="btn btn-outline" style="padding:0.35rem 0.6rem; font-size:0.78rem;" onclick="openPhotoModal('${s.reg_no}', '${s.name}')">Photo</button>
+                  <button class="btn btn-primary" style="padding:0.35rem 0.6rem; font-size:0.78rem;" onclick="openMarksModal('${s.reg_no}', '${s.name}')">Marksheets</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error("Filter error:", err);
+      }
+    }
+  </script>
+</body>
+</html>
+
